@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>きょうのよていとやること</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-height:100vh}
+.header{background:linear-gradient(135deg,#FF8C42,#FFB347);padding:22px 20px 30px;border-radius:0 0 30px 30px;text-align:center;position:relative;box-shadow:0 4px 20px rgba(255,140,66,.3)}
+.header h1{font-size:26px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.15)}
+.date-lbl{font-size:15px;color:rgba(255,255,255,.9);font-weight:700;margin-top:5px}
+.sbtn{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.3);border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center}
+.pw{background:rgba(255,255,255,.25);border-radius:20px;height:12px;margin:14px 24px 0;overflow:hidden}
+.pb{height:100%;background:#fff;border-radius:20px;transition:width .5s}
+.pt{font-size:13px;color:rgba(255,255,255,.95);font-weight:700;margin-top:6px;text-align:center}
+.rrow{display:flex;align-items:center;justify-content:flex-end;padding:8px 14px 0}
+.rbtn{background:none;border:none;color:#FF8C42;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px}
+.rbtn:hover{background:#FFE8C8}
+.section{margin:16px 14px 0}
+.stitle{font-size:17px;font-weight:800;color:#E07A1F;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ecard{background:#fff;border-radius:16px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(255,140,66,.1)}
+.etime{font-size:13px;font-weight:700;color:#FF8C42;min-width:52px;text-align:center;background:#FFF0E0;border-radius:8px;padding:4px 6px}
+.eico{font-size:26px;min-width:32px;text-align:center}
+.ename{font-size:15px;font-weight:700;color:#333;flex:1}
+.tcard{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;border:2.5px solid #F0E4D0;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:all .2s;user-select:none}
+.tcard:hover{border-color:#FF8C42;transform:translateY(-2px)}
+.tcard.done{background:#F0FAF0;border-color:#7CC47C;opacity:.85}
+.tcard.done .tname{text-decoration:line-through;color:#999}
+.tcheck{width:32px;height:32px;border-radius:50%;border:3px solid #DDCBB0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#fff}
+.tcard.done .tcheck{background:#7CC47C;border-color:#7CC47C;color:#fff}
+.temi{font-size:28px;min-width:36px;text-align:center}
+.tname{font-size:16px;font-weight:700;color:#333;flex:1}
+.emsg{text-align:center;padding:22px 16px;color:#CCC;font-size:14px;font-weight:600;line-height:1.9}
+.confetti{text-align:center;padding:14px;font-size:15px;font-weight:800;color:#FF8C42;display:none}
+.confetti.show{display:block;animation:bonce .5s ease}
+@keyframes bonce{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+.ovl.show{display:flex}
+.spanel{background:#fff;border-radius:28px 28px 0 0;width:100%;max-width:640px;padding:24px 20px 32px;max-height:92vh;overflow-y:auto}
+.ptitle{font-size:19px;font-weight:900;color:#333;margin-bottom:16px;text-align:center}
+.tabrow{display:flex;border-radius:12px;overflow:hidden;border:2px solid #EEE;margin-bottom:20px}
+.tbtn{flex:1;padding:10px 4px;border:none;background:#fff;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;color:#999;transition:all .2s}
+.tbtn.active{background:#FF8C42;color:#fff}
+.fg{margin-bottom:16px}
+.fl{font-size:12px;font-weight:800;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;padding:11px 14px;border:2px solid #EEE;border-radius:12px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;color:#333;outline:none}
+.fi:focus{border-color:#FF8C42}
+.hint{font-size:12px;color:#AAA;font-weight:600;margin-top:5px;line-height:1.7}
+.fbtn{background:#34A853;color:#fff;border:none;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.fbtn:hover{background:#2C8F47}
+.fbtn:disabled{background:#AAA;cursor:not-allowed}
+.smsg{font-size:13px;font-weight:700;margin-top:6px;text-align:center;min-height:18px}
+.smsg.err{color:#E05050}.smsg.ok{color:#34A853}.smsg.inf{color:#888}
+.dtabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.dtab{padding:6px 13px;border-radius:20px;border:2px solid #EEE;font-size:13px;font-weight:800;cursor:pointer;background:#fff;color:#999;font-family:'Nunito',sans-serif;transition:all .2s}
+.dtab.active{background:#FF8C42;border-color:#FF8C42;color:#fff}
+.terow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.terow input{flex:1;padding:9px 12px;border:2px solid #EEE;border-radius:10px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;outline:none}
+.terow input:focus{border-color:#FF8C42}
+.epick{width:44px!important;flex:none!important;height:38px;border:2px solid #EEE!important;border-radius:10px!important;font-size:18px;text-align:center;background:#FFF9F0}
+.dbtn{width:32px;height:32px;border:none;border-radius:50%;background:#FFE8E8;color:#E05050;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.atbtn{background:#FFF0E0;border:2px dashed #FFB347;color:#E07A1F;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;border-radius:10px;padding:9px 14px;cursor:pointer;width:100%;margin-top:4px}
+.svbtn{background:#FF8C42;color:#fff;border:none;border-radius:16px;padding:14px;width:100%;font-size:16px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:8px}
+.svbtn:hover{background:#E07030}
+.clbtn{background:#F5F5F5;color:#888;border:none;border-radius:16px;padding:12px;width:100%;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:8px}
+.rstbtn{background:none;border:none;color:#E05050;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;text-decoration:underline;margin-top:6px;display:block;text-align:center;width:100%}
+.dvd{height:1px;background:#EEE;margin:14px 0}
+.dbgbox{background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;margin-top:8px;font-size:11px;font-family:monospace;color:#555;max-height:120px;overflow-y:auto;display:none}
+
+/* ===== 月間スタンプカード ===== */
+.stamp-card{background:#fff;border-radius:18px;padding:14px 14px 16px;box-shadow:0 2px 10px rgba(255,140,66,.1);border:2px solid #FFF0E0}
+.stamp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.stamp-month{font-size:15px;font-weight:900;color:#333}
+.stamp-count{font-size:12px;font-weight:900;color:#E07A1F;background:#FFF0E0;border-radius:999px;padding:5px 10px;white-space:nowrap}
+.stamp-nav{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-bottom:10px}
+.stamp-navbtn{border:none;background:#FFF0E0;color:#E07A1F;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer}
+.stamp-navbtn:hover{background:#FFE3BF}
+.stamp-week,.stamp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.stamp-week{margin-bottom:7px}
+.stamp-wd{text-align:center;font-size:11px;font-weight:900;color:#C5A983}
+.stamp-day{aspect-ratio:1/1;border-radius:14px;background:#FFF9F0;border:2px solid #F3E4CE;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:42px}
+.stamp-day.blank{background:transparent;border-color:transparent}
+.stamp-day.future{opacity:.42}
+.stamp-day.today{border-color:#FF8C42;box-shadow:0 0 0 3px #FFE8C8}
+.stamp-num{font-size:11px;font-weight:900;color:#B28A60;line-height:1}
+.stamp-mark{font-size:19px;line-height:1;filter:grayscale(1);opacity:.35}
+.stamp-day.got{background:#FFF4D8;border-color:#FFD16B}
+.stamp-day.got .stamp-mark{filter:none;opacity:1;animation:stampPop .45s ease both}
+.stamp-day.got .stamp-num{color:#E07A1F}
+@keyframes stampPop{0%{transform:scale(.5) rotate(-12deg)}70%{transform:scale(1.18) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+
+/* ===== 全部できた時の画面全体アニメーション ===== */
+.finish-ovl{display:none;position:fixed;inset:0;z-index:300;background:radial-gradient(circle at center,rgba(255,255,255,.97),rgba(255,232,200,.94));align-items:center;justify-content:center;overflow:hidden;pointer-events:none}
+.finish-ovl.show{display:flex;animation:finishFade .35s ease both}
+.finish-card{position:relative;z-index:2;background:#fff;border-radius:28px;padding:28px 26px;text-align:center;box-shadow:0 16px 40px rgba(255,140,66,.28);animation:finishPop .7s cubic-bezier(.2,1.4,.35,1) both;max-width:86vw}
+.finish-main{font-size:58px;line-height:1;margin-bottom:12px;animation:finishBounce 1.1s ease infinite}
+.finish-title{font-size:26px;font-weight:900;color:#E07A1F;margin-bottom:8px}
+.finish-sub{font-size:15px;font-weight:800;color:#8B6A42}
+.finish-star{position:absolute;font-size:28px;animation:starFly 2.2s ease-out forwards;opacity:0;z-index:1}
+.finish-bubble{position:absolute;width:16px;height:16px;border-radius:50%;background:rgba(255,140,66,.28);animation:bubbleUp 2s ease-out forwards;z-index:1}
+@keyframes finishFade{from{opacity:0}to{opacity:1}}
+@keyframes finishPop{0%{transform:scale(.62) rotate(-6deg);opacity:0}70%{transform:scale(1.06) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes finishBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.05)}}
+@keyframes starFly{0%{transform:translateY(40px) scale(.5) rotate(0);opacity:0}15%{opacity:1}100%{transform:translateY(-120vh) scale(1.2) rotate(420deg);opacity:0}}
+@keyframes bubbleUp{0%{transform:translateY(30px) scale(.4);opacity:0}20%{opacity:1}100%{transform:translateY(-90vh) scale(1.8);opacity:0}}
+
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="sbtn" onclick="openSettings()">⚙️</button>
+  <div style="font-size:36px;margin-bottom:4px" id="hemi">☀️</div>
+  <h1 id="hgreet">きょうも がんばろう！</h1>
+  <div class="date-lbl" id="hdate"></div>
+  <div class="pw"><div class="pb" id="pbar" style="width:0%"></div></div>
+  <div class="pt" id="ptxt">0 / 0 おわった</div>
+</div>
+<div class="rrow">
+  <button class="rbtn" id="rbtn" onclick="autoFetch()">🔄 よていを こうしんする</button>
+</div>
+<div class="confetti" id="confetti">🎉 ぜんぶ できたよ！すごい！🎉</div>
+<div class="section">
+  <div class="stitle">📅 きょうのよてい</div>
+  <div id="evlist"><div class="emsg">⚙️ せっていから iCal URL を いれてね</div></div>
+</div>
+<div class="section">
+  <div class="stitle">✅ やること リスト</div>
+  <div id="tklist"></div>
+</div>
+
+<div class="section">
+  <div class="stitle">🌟 今月のスタンプカード</div>
+  <div class="stamp-card">
+    <div class="stamp-head">
+      <div class="stamp-month" id="stampMonth"></div>
+      <div class="stamp-count" id="stampCount">0こ</div>
+    </div>
+    <div class="stamp-nav">
+      <button class="stamp-navbtn" onclick="moveStampMonth(-1)">← まえの月</button>
+      <button class="stamp-navbtn" onclick="showThisMonth()">今月</button>
+      <button class="stamp-navbtn" onclick="moveStampMonth(1)">つぎの月 →</button>
+    </div>
+    <div class="stamp-week">
+      <div class="stamp-wd">日</div><div class="stamp-wd">月</div><div class="stamp-wd">火</div><div class="stamp-wd">水</div><div class="stamp-wd">木</div><div class="stamp-wd">金</div><div class="stamp-wd">土</div>
+    </div>
+    <div class="stamp-grid" id="stampGrid"></div>
+  </div>
+</div>
+
+<div class="finish-ovl" id="finishOvl">
+  <div class="finish-card">
+    <div class="finish-main">🎉</div>
+    <div class="finish-title">ぜんぶ できたよ！</div>
+    <div class="finish-sub">きょうの やること かんりょう！</div>
+  </div>
+</div>
+
+<div class="ovl" id="ovl" onclick="ovlClick(event)">
+  <div class="spanel">
+    <div class="ptitle">⚙️ せってい</div>
+    <div class="tabrow">
+      <button class="tbtn active" id="tb-cal" onclick="switchTab('cal')">📅 カレンダー</button>
+      <button class="tbtn" id="tb-tasks" onclick="switchTab('tasks')">✅ やること</button>
+      <button class="tbtn" id="tb-gen" onclick="switchTab('gen')">👤 その他</button>
+    </div>
+    <div id="pane-cal">
+      <div class="fg">
+        <label class="fl">Google カレンダー iCal URL</label>
+        <input class="fi" id="ical-url" placeholder="https://calendar.google.com/calendar/ical/..."/>
+        <div class="hint">📋 Googleカレンダー →「︙」→「設定と共有」→「カレンダーの統合」→「iCal形式の非公開URL」をコピー<br>⚠️ パソコンで直接ファイルを開いた場合のみ自動取得できます</div>
+      </div>
+      <button class="fbtn" id="fetch-btn" onclick="fetchFromSettings()">🔄 いますぐ よみこむ</button>
+      <div class="smsg" id="calmsg"></div>
+      <div class="dbgbox" id="dbgbox"></div>
+    </div>
+    <div id="pane-tasks" style="display:none">
+      <label class="fl" style="margin-bottom:10px">「毎日」または ようびを えらんで やることを いれてね</label>
+      <div class="dtabs" id="dtabs"></div>
+      <div id="tkarea" style="margin-bottom:12px"></div>
+      <button class="atbtn" onclick="addRow()">＋ やることを ついか</button>
+    </div>
+    <div id="pane-gen" style="display:none">
+      <div class="fg">
+        <label class="fl">こどもの なまえ</label>
+        <input class="fi" id="cname" placeholder="例：はなちゃん"/>
+      </div>
+    </div>
+    <div class="dvd"></div>
+    <button class="svbtn" onclick="saveSettings()">💾 ほぞんする</button>
+    <button class="rstbtn" onclick="resetDay()">きょうの チェックを リセット</button>
+    <button class="clbtn" onclick="closeSettings()">とじる</button>
+  </div>
+</div>
+
+<script>
+var DJ=['にちようび','げつようび','かようび','すいようび','もくようび','きんようび','どようび'];
+var DS=['日','月','火','水','木','金','土'];
+var MN=['1','2','3','4','5','6','7','8','9','10','11','12'];
+var EI=['🏫','⚽','🎹','🏊','📖','🎮','🍱','🎨','🌸','🚌','🎯','🎪'];
+var STORE_KEY='kpv6';
+
+// 今日の日付をJST基準で取得
+var nowUTC=new Date();
+var nowJST=new Date(nowUTC.getTime()+9*3600*1000);
+var dow=nowJST.getUTCDay();
+var tY=nowJST.getUTCFullYear();
+var tM=nowJST.getUTCMonth()+1;
+var tD=nowJST.getUTCDate();
+var tstr=tY+'-'+('0'+tM).slice(-2)+'-'+('0'+tD).slice(-2);
+var todayFlat=(''+tY)+('0'+tM).slice(-2)+('0'+tD).slice(-2);
+var editDow=dow;
+var stampViewY=tY;
+var stampViewM=tM;
+
+var S={childName:'',icalUrl:'',fixedTasks:[],tasks:{0:[],1:[],2:[],3:[],4:[],5:[],6:[]},done:{},stamps:{},events:[]};
+
+function pad(n){return('0'+n).slice(-2)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function loadS(){
+  try{
+    var r=localStorage.getItem(STORE_KEY);
+    if(r){
+      var p=JSON.parse(r);
+      if(p.childName!==undefined)S.childName=p.childName;
+      if(p.icalUrl!==undefined)S.icalUrl=p.icalUrl;
+      if(p.fixedTasks!==undefined)S.fixedTasks=p.fixedTasks;
+      if(p.tasks!==undefined)S.tasks=p.tasks;
+      if(p.done!==undefined)S.done=p.done;
+      if(p.stamps!==undefined)S.stamps=p.stamps;
+      if(p.events!==undefined)S.events=p.events;
+    }
+  }catch(e){}
+  if(!S.done[tstr])S.done[tstr]=[];
+  if(!S.stamps)S.stamps={};
+  Object.keys(S.done).forEach(function(k){if(k<tstr)delete S.done[k];});
+}
+function saveS(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S));}catch(e){}}
+
+function rHeader(){
+  var h=nowJST.getUTCHours();
+  var g,em;
+  if(h<10){g='おはよう！';em='🌅';}
+  else if(h<17){g='きょうも がんばろう！';em='☀️';}
+  else{g='おつかれさま！';em='🌙';}
+  if(S.childName)g=S.childName+'、'+g;
+  document.getElementById('hemi').textContent=em;
+  document.getElementById('hgreet').textContent=g;
+  document.getElementById('hdate').textContent=tY+'ねん '+MN[tM-1]+'がつ '+tD+'にち（'+DJ[dow]+'）';
+}
+
+function getTodayTasks(){
+  var list=[];
+  (S.fixedTasks||[]).forEach(function(t,i){list.push({key:'f'+i,name:t.name,emoji:t.emoji});});
+  (S.tasks[dow]||[]).forEach(function(t,i){list.push({key:'d'+i,name:t.name,emoji:t.emoji});});
+  return list;
+}
+function getDoneKeys(){
+  var done=S.done[tstr]||[];
+  return done.map(function(v){return typeof v==='number'?'d'+v:String(v);});
+}
+function rProgress(){
+  var tasks=getTodayTasks(),done=getDoneKeys();
+  var dn=0;
+  tasks.forEach(function(t){if(done.indexOf(t.key)>=0)dn++;});
+  var tot=tasks.length;
+  var pct=tot?Math.round(dn/tot*100):0;
+  document.getElementById('pbar').style.width=pct+'%';
+  document.getElementById('ptxt').textContent=dn+' / '+tot+' おわった';
+  var c=document.getElementById('confetti');
+  if(tot>0&&dn>=tot)c.classList.add('show');else c.classList.remove('show');
+}
+
+function rTasks(){
+  var tasks=getTodayTasks(),done=getDoneKeys();
+  var el=document.getElementById('tklist');
+  if(!tasks.length){el.innerHTML='<div class="emsg">やることが まだ ないよ<br>⚙️ せっていから ついかしてね！</div>';return;}
+  el.innerHTML=tasks.map(function(t,i){
+    var isDone=done.indexOf(t.key)>=0;
+    return '<div class="tcard'+(isDone?' done':'')+'" onclick="toggleTask(\''+t.key+'\')">'
+      +'<div class="tcheck">'+(isDone?'✓':'')+'</div>'
+      +'<div class="temi">'+(t.emoji||'📝')+'</div>'
+      +'<div class="tname">'+esc(t.name)+'</div></div>';
+  }).join('');
+}
+
+
+function isTodayAllDone(){
+  var tasks=getTodayTasks(),done=getDoneKeys();
+  if(!tasks.length)return false;
+  for(var i=0;i<tasks.length;i++){
+    if(done.indexOf(tasks[i].key)<0)return false;
+  }
+  return true;
+}
+
+function syncTodayStamp(){
+  if(!S.stamps)S.stamps={};
+  if(isTodayAllDone())S.stamps[tstr]=true;
+  else delete S.stamps[tstr];
+}
+
+function daysInMonth(y,m){return new Date(Date.UTC(y,m,0)).getUTCDate();}
+function firstDowOfMonth(y,m){return new Date(Date.UTC(y,m-1,1)).getUTCDay();}
+function dateKey(y,m,d){return y+'-'+pad(m)+'-'+pad(d);}
+
+function rStampCard(){
+  var grid=document.getElementById('stampGrid');
+  if(!grid)return;
+  if(!S.stamps)S.stamps={};
+  var y=stampViewY,m=stampViewM;
+  document.getElementById('stampMonth').textContent=y+'ねん '+m+'がつ';
+  var days=daysInMonth(y,m);
+  var first=firstDowOfMonth(y,m);
+  var html=[];
+  var count=0;
+  for(var b=0;b<first;b++)html.push('<div class="stamp-day blank"></div>');
+  for(var d=1;d<=days;d++){
+    var k=dateKey(y,m,d);
+    var got=!!S.stamps[k];
+    var cls='stamp-day';
+    if(got){cls+=' got';count++;}
+    if(k===tstr)cls+=' today';
+    if(k>tstr)cls+=' future';
+    html.push('<div class="'+cls+'"><div class="stamp-num">'+d+'</div><div class="stamp-mark">'+(got?'⭐':'○')+'</div></div>');
+  }
+  grid.innerHTML=html.join('');
+  document.getElementById('stampCount').textContent=count+'こ あつめた';
+}
+
+function moveStampMonth(delta){
+  stampViewM+=delta;
+  while(stampViewM<1){stampViewM+=12;stampViewY--;}
+  while(stampViewM>12){stampViewM-=12;stampViewY++;}
+  rStampCard();
+}
+
+function showThisMonth(){
+  stampViewY=tY;
+  stampViewM=tM;
+  rStampCard();
+}
+
+function showFinishAnimation(){
+  var ov=document.getElementById('finishOvl');
+  if(!ov)return;
+  ov.querySelectorAll('.finish-star,.finish-bubble').forEach(function(n){n.remove();});
+  var marks=['⭐','✨','🌟','🎈','💮','👏','🎊'];
+  for(var i=0;i<34;i++){
+    var sp=document.createElement('div');
+    sp.className='finish-star';
+    sp.textContent=marks[i%marks.length];
+    sp.style.left=(Math.random()*100)+'vw';
+    sp.style.bottom=(-20-Math.random()*80)+'px';
+    sp.style.animationDelay=(Math.random()*.55)+'s';
+    sp.style.animationDuration=(1.8+Math.random()*1.2)+'s';
+    sp.style.fontSize=(20+Math.random()*24)+'px';
+    ov.appendChild(sp);
+  }
+  for(var j=0;j<26;j++){
+    var b=document.createElement('div');
+    b.className='finish-bubble';
+    b.style.left=(Math.random()*100)+'vw';
+    b.style.bottom=(-10-Math.random()*50)+'px';
+    b.style.animationDelay=(Math.random()*.6)+'s';
+    b.style.animationDuration=(1.6+Math.random()*1.1)+'s';
+    b.style.width=b.style.height=(8+Math.random()*22)+'px';
+    ov.appendChild(b);
+  }
+  ov.classList.add('show');
+  clearTimeout(window._finishTimer);
+  window._finishTimer=setTimeout(function(){ov.classList.remove('show');},3200);
+}
+
+function toggleTask(key){
+  var wasAllDone=isTodayAllDone();
+  if(!S.done[tstr])S.done[tstr]=[];
+  var d=getDoneKeys(),pos=d.indexOf(String(key));
+  if(pos>=0)d.splice(pos,1);else d.push(String(key));
+  S.done[tstr]=d;
+  var nowAllDone=isTodayAllDone();
+  syncTodayStamp();
+  saveS();rTasks();rProgress();rStampCard();
+  if(!wasAllDone&&nowAllDone)showFinishAnimation();
+}
+
+function rEvents(){
+  var el=document.getElementById('evlist');
+  if(!S.events||!S.events.length){
+    el.innerHTML='<div class="emsg">⚙️ せっていから iCal URL を いれてね</div>';return;
+  }
+  el.innerHTML=S.events.map(function(ev,i){
+    return '<div class="ecard">'
+      +'<div class="etime">'+(ev.time||'いちにち')+'</div>'
+      +'<div class="eico">'+EI[i%EI.length]+'</div>'
+      +'<div class="ename">'+esc(ev.title)+'</div></div>';
+  }).join('');
+}
+
+// ========== iCal パーサー ==========
+function parseIcal(text){
+  var log=[];
+  log.push('todayFlat='+todayFlat);
+
+  // RFC5545: 折り返し行（次行がスペース/タブで始まる）を結合
+  var joined=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'');
+  var lines=joined.split('\n');
+
+  var events=[];
+  var inEv=false,cur={};
+
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line)continue;
+    if(line==='BEGIN:VEVENT'){inEv=true;cur={};continue;}
+    if(line==='END:VEVENT'){
+      if(inEv){
+        var ev=extractEv(cur,log);
+        if(ev)events.push(ev);
+      }
+      inEv=false;cur={};continue;
+    }
+    if(!inEv)continue;
+    var sep=line.indexOf(':');
+    if(sep<0)continue;
+    var propFull=line.substring(0,sep); // e.g. "DTSTART;TZID=Asia/Tokyo"
+    var propVal=line.substring(sep+1);  // e.g. "20260512T090000"
+    var baseName=propFull.split(';')[0].toUpperCase(); // e.g. "DTSTART"
+    cur[baseName]=propVal;
+    if(baseName==='DTSTART'){
+      cur['_DT_RAW']=propVal;
+      cur['_DT_PROP']=propFull.toUpperCase(); // full prop name with params
+    }
+    if(baseName==='SUMMARY'){
+      cur['_SUMMARY_RAW']=propVal;
+    }
+  }
+
+  events.sort(function(a,b){return a._sk-b._sk;});
+  log.push('total events for today: '+events.length);
+
+  // デバッグ表示
+  var dbg=document.getElementById('dbgbox');
+  if(dbg){dbg.style.display='block';dbg.textContent=log.join('\n');}
+
+  return events;
+}
+
+function extractEv(cur,log){
+  var sum=(cur['SUMMARY']||'').trim();
+  sum=sum.replace(/\\n/g,' ').replace(/\\,/g,',').replace(/\\/g,'');
+  if(!sum)return null;
+
+  var dtRaw=cur['_DT_RAW']||'';
+  var dtProp=cur['_DT_PROP']||'';
+  if(!dtRaw)return null;
+
+  // 数字だけ抽出
+  var digits=dtRaw.replace(/\D/g,'');
+  if(digits.length<8){log.push(sum+': digits too short: '+digits);return null;}
+
+  // 終日（8桁のみ）
+  if(digits.length===8){
+    var match=(digits===todayFlat);
+    log.push(sum+': allday '+digits+' match='+match);
+    if(match)return{title:sum,time:'いちにち',_sk:0};
+    return null;
+  }
+
+  // 時刻あり
+  var yr=+digits.slice(0,4);
+  var mo=+digits.slice(4,6)-1; // 0-indexed for JS Date
+  var dy=+digits.slice(6,8);
+  var hr=+digits.slice(8,10);
+  var mn=+digits.slice(10,12);
+
+  var isUTC=(dtRaw.charAt(dtRaw.length-1)==='Z');
+  var hasTZID=(dtProp.indexOf('TZID')>=0);
+
+  var jstDate;
+  if(isUTC){
+    // UTC時刻 → JST(+9h)
+    var utcMs=Date.UTC(yr,mo,dy,hr,mn,0);
+    jstDate=new Date(utcMs+9*3600*1000);
+  } else if(hasTZID){
+    // TZID=Asia/Tokyo → そのまま日本時間
+    jstDate=new Date(yr,mo,dy,hr,mn,0);
+  } else {
+    // 指定なし → ローカル時刻として扱う
+    jstDate=new Date(yr,mo,dy,hr,mn,0);
+  }
+
+  // JSTの日付文字列（UTC offsetを使わず、JSTとして計算したDateのUTC値を使う）
+  var jstFlat;
+  if(isUTC){
+    // jstDateはUTCでJST時刻を表している
+    jstFlat=''+jstDate.getUTCFullYear()+pad(jstDate.getUTCMonth()+1)+pad(jstDate.getUTCDate());
+    var timeStr=pad(jstDate.getUTCHours())+':'+pad(jstDate.getUTCMinutes());
+    log.push(sum+': UTC '+dtRaw+' → JST '+timeStr+' jstFlat='+jstFlat+' match='+(jstFlat===todayFlat));
+    if(jstFlat!==todayFlat)return null;
+    return{title:sum,time:timeStr,_sk:jstDate.getUTCHours()*60+jstDate.getUTCMinutes()};
+  } else {
+    jstFlat=''+jstDate.getFullYear()+pad(jstDate.getMonth()+1)+pad(jstDate.getDate());
+    var timeStr2=pad(jstDate.getHours())+':'+pad(jstDate.getMinutes());
+    log.push(sum+': local '+dtRaw+' → '+timeStr2+' jstFlat='+jstFlat+' match='+(jstFlat===todayFlat));
+    if(jstFlat!==todayFlat)return null;
+    return{title:sum,time:timeStr2,_sk:jstDate.getHours()*60+jstDate.getMinutes()};
+  }
+}
+
+// ========== 取得 ==========
+var PROXIES=[
+  function(u){return 'https://corsproxy.io/?'+encodeURIComponent(u);},
+  function(u){return 'https://api.allorigins.win/get?url='+encodeURIComponent(u);},
+  function(u){return 'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u);}
+];
+
+async function fetchIcalData(url,statusEl,btnEl){
+  if(!url){if(statusEl){statusEl.textContent='iCal URL が せっていされていないよ';statusEl.className='smsg err';}return false;}
+  if(btnEl)btnEl.disabled=true;
+  if(statusEl){statusEl.textContent='よみこんでいます…';statusEl.className='smsg inf';}
+  var icalText='';
+  // 直接取得を試みる（ローカルファイルで開いた場合）
+  try{
+    var r=await fetch(url,{signal:AbortSignal.timeout(6000)});
+    if(r.ok){var t=await r.text();if(t.includes('BEGIN:VCALENDAR'))icalText=t;}
+  }catch(e){}
+  // プロキシ経由
+  if(!icalText){
+    for(var i=0;i<PROXIES.length;i++){
+      if(statusEl){statusEl.textContent='よみこんでいます…('+(i+1)+'/'+PROXIES.length+')';statusEl.className='smsg inf';}
+      try{
+        var res=await fetch(PROXIES[i](url),{signal:AbortSignal.timeout(8000)});
+        if(!res.ok)continue;
+        var txt=await res.text();
+        if(txt.includes('"contents"')){try{txt=JSON.parse(txt).contents;}catch(e){}}
+        if(txt&&txt.includes('BEGIN:VCALENDAR')){icalText=txt;break;}
+      }catch(e){}
+    }
+  }
+  if(btnEl)btnEl.disabled=false;
+  if(!icalText){
+    if(statusEl){statusEl.textContent='よみこめなかったよ😢 URLを かくにんしてね';statusEl.className='smsg err';}
+    return false;
+  }
+  var evs=parseIcal(icalText);
+  S.events=evs;saveS();
+  if(statusEl){
+    statusEl.textContent=evs.length?'✅ きょうのよてい '+evs.length+'けん！':'✅ よみこんだよ！きょうのよていは ないみたい';
+    statusEl.className='smsg ok';
+  }
+  rEvents();
+  return true;
+}
+
+async function autoFetch(){
+  if(!S.icalUrl)return;
+  var rb=document.getElementById('rbtn');
+  rb.textContent='よみこんでいます…';
+  await fetchIcalData(S.icalUrl,null,null);
+  rb.textContent='🔄 よていを こうしんする';
+}
+
+async function fetchFromSettings(){
+  var url=document.getElementById('ical-url').value.trim();
+  S.icalUrl=url;saveS();
+  await fetchIcalData(url,document.getElementById('calmsg'),document.getElementById('fetch-btn'));
+}
+
+// ========== 設定UI ==========
+function switchTab(t){
+  var taskPane=document.getElementById('pane-tasks');
+  if(taskPane&&taskPane.style.display!=='none')collectTaskInputs();
+  ['cal','tasks','gen'].forEach(function(n){
+    document.getElementById('pane-'+n).style.display=n===t?'block':'none';
+    document.getElementById('tb-'+n).classList.toggle('active',n===t);
+  });
+  if(t==='tasks'){rDayTabs();rTaskArea();}
+}
+function openSettings(){
+  document.getElementById('cname').value=S.childName||'';
+  document.getElementById('ical-url').value=S.icalUrl||'';
+  document.getElementById('calmsg').textContent='';
+  var dbg=document.getElementById('dbgbox');
+  if(dbg)dbg.style.display='none';
+  editDow=dow;switchTab('cal');
+  document.getElementById('ovl').classList.add('show');
+}
+function closeSettings(){
+  document.getElementById('ovl').classList.remove('show');
+  document.getElementById('pane-tasks').style.display='none';
+  document.getElementById('tkarea').innerHTML='';
+}
+function ovlClick(e){if(e.target===document.getElementById('ovl'))closeSettings();}
+function taskTarget(){
+  if(editDow==='fixed')return S.fixedTasks||(S.fixedTasks=[]);
+  if(!S.tasks[editDow])S.tasks[editDow]=[];
+  return S.tasks[editDow];
+}
+function collectTaskInputs(){
+  var rows=document.querySelectorAll('#tkarea .terow'),saved=[];
+  for(var i=0;i<rows.length;i++){
+    var n=(document.getElementById('tn'+i)||{}).value||'';
+    var em=(document.getElementById('te'+i)||{}).value||'📝';
+    saved.push({name:n.trim(),emoji:em.trim()||'📝'});
+  }
+  if(editDow==='fixed')S.fixedTasks=saved;else S.tasks[editDow]=saved;
+}
+function rDayTabs(){
+  var html='<button class="dtab'+(editDow==='fixed'?' active':'')+'" onclick="swDay(\'fixed\')">毎日</button>';
+  html+=DS.map(function(d,i){
+    return '<button class="dtab'+(i===editDow?' active':'')+'" onclick="swDay('+i+')">'+d+'</button>';
+  }).join('');
+  document.getElementById('dtabs').innerHTML=html;
+}
+function swDay(d){collectTaskInputs();editDow=d;rDayTabs();rTaskArea();}
+function rTaskArea(){
+  var tasks=taskTarget();
+  document.getElementById('tkarea').innerHTML=tasks.map(function(t,i){
+    return '<div class="terow">'
+      +'<input value="'+esc(t.emoji||'')+'" class="epick" maxlength="2" id="te'+i+'" placeholder="😀"/>'
+      +'<input value="'+esc(t.name||'')+'" id="tn'+i+'" placeholder="やること"/>'
+      +'<button class="dbtn" onclick="delRow('+i+')">✕</button></div>';
+  }).join('');
+}
+function addRow(){
+  collectTaskInputs();
+  taskTarget().push({name:'',emoji:'📝'});rTaskArea();
+  var els=document.querySelectorAll('#tkarea [id^="tn"]');
+  if(els.length)els[els.length-1].focus();
+}
+function delRow(i){collectTaskInputs();taskTarget().splice(i,1);rTaskArea();}
+function saveSettings(){
+  S.childName=document.getElementById('cname').value.trim();
+  S.icalUrl=document.getElementById('ical-url').value.trim();
+  if(document.getElementById('pane-tasks').style.display!=='none'){
+    collectTaskInputs();
+    if(editDow==='fixed'){S.fixedTasks=(S.fixedTasks||[]).filter(function(t){return t.name;});}
+    else{S.tasks[editDow]=(S.tasks[editDow]||[]).filter(function(t){return t.name;});}
+  }
+  syncTodayStamp();saveS();closeSettings();rHeader();rTasks();rProgress();rStampCard();
+}
+function resetDay(){
+  if(confirm('きょうの チェックを ぜんぶ リセット する？')){
+    S.done[tstr]=[];delete S.stamps[tstr];saveS();rTasks();rProgress();rStampCard();closeSettings();
+  }
+}
+
+// ========== 起動 ==========
+loadS();syncTodayStamp();saveS();rHeader();rEvents();rTasks();rProgress();rStampCard();
+if(S.icalUrl)autoFetch();
+</script>
+</body>
+</html>
