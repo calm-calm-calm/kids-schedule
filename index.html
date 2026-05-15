@@ -167,15 +167,6 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
   <div class="stitle">✅ やること リスト</div>
   <div id="tklist"></div>
 </div>
-<div class="section done-section" id="doneSection" style="display:none">
-  <details class="done-box" id="doneDetails">
-    <summary>
-      <span>✅ おわったもの</span>
-      <span class="done-count" id="doneCount">0こ</span>
-    </summary>
-    <div id="donelist"></div>
-  </details>
-</div>
 
 <div class="section">
   <div class="stitle">🌟 今月のスタンプカード</div>
@@ -322,47 +313,18 @@ function rProgress(){
 
 function rTasks(){
   var tasks=getTodayTasks(),done=getDoneKeys();
-  var active=[],finished=[];
-  tasks.forEach(function(t){
-    if(done.indexOf(t.key)>=0)finished.push(t);
-    else active.push(t);
-  });
-
   var el=document.getElementById('tklist');
   if(!tasks.length){
     el.innerHTML='<div class="emsg">やることが まだ ないよ<br>⚙️ せっていから ついかしてね！</div>';
-  }else if(!active.length){
-    el.innerHTML='<div class="active-empty">🎉 きょうの やることは<br>ぜんぶ おわったよ！</div>';
-  }else{
-    el.innerHTML=active.map(function(t){
-      return '<div class="tcard" onclick="toggleTask(\''+t.key+'\')">'
-        +'<div class="tcheck"></div>'
-        +'<div class="temi">'+(t.emoji||'📝')+'</div>'
-        +'<div class="tname">'+esc(t.name)+'</div></div>';
-    }).join('');
-  }
-  rDoneTasks(finished);
-}
-
-function rDoneTasks(finished){
-  var sec=document.getElementById('doneSection');
-  var cnt=document.getElementById('doneCount');
-  var list=document.getElementById('donelist');
-  if(!sec||!cnt||!list)return;
-  if(!finished.length){
-    sec.style.display='none';
-    list.innerHTML='';
-    cnt.textContent='0こ';
     return;
   }
-  sec.style.display='block';
-  cnt.textContent=finished.length+'こ';
-  list.innerHTML='<div class="done-list-inner">'+finished.map(function(t){
-    return '<div class="tcard done" onclick="toggleTask(\''+t.key+'\')">'
-      +'<div class="tcheck">✓</div>'
+  el.innerHTML=tasks.map(function(t){
+    var isDone=done.indexOf(t.key)>=0;
+    return '<div class="tcard'+(isDone?' done':'')+'" onclick="toggleTask(\''+t.key+'\')">'
+      +'<div class="tcheck">'+(isDone?'✓':'')+'</div>'
       +'<div class="temi">'+(t.emoji||'📝')+'</div>'
       +'<div class="tname">'+esc(t.name)+'</div></div>';
-  }).join('')+'</div>';
+  }).join('');
 }
 
 
