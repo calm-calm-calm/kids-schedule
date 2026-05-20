@@ -82,6 +82,26 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
 .dvd{height:1px;background:#EEE;margin:14px 0}
 .dbgbox{background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:10px;margin-top:8px;font-size:11px;font-family:monospace;color:#555;max-height:120px;overflow-y:auto;display:none}
 
+/* ===== カレンダー予定チェック ===== */
+.ecard{cursor:pointer;user-select:none;border:2.5px solid #FFF0E0}
+.ecard.done{background:#F0FAF0;border-color:#7CC47C;opacity:.88}
+.ecard.done .ename{text-decoration:line-through;color:#999}
+.echeck{width:30px;height:30px;border-radius:50%;border:3px solid #DDCBB0;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:#fff;color:#fff}
+.ecard.done .echeck{background:#7CC47C;border-color:#7CC47C;color:#fff}
+
+/* ===== シール管理 ===== */
+.sticker-card{background:#fff;border-radius:18px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(255,140,66,.1);border:2px solid #FFF0E0}
+.sticker-title{font-size:15px;font-weight:900;color:#333;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.sticker-badge{font-size:13px;font-weight:900;color:#E07A1F;background:#FFF0E0;border-radius:999px;padding:5px 10px;white-space:nowrap}
+.sticker-bar{height:12px;background:#F5E8D4;border-radius:999px;overflow:hidden;margin:8px 0}
+.sticker-fill{height:100%;background:linear-gradient(90deg,#FFD16B,#FF8C42);border-radius:999px;transition:width .35s}
+.sticker-msg{font-size:13px;font-weight:800;color:#8B6A42;line-height:1.6}
+.sticker-task{border-color:#FFD16B;background:#FFFCF3}
+.sticker-task.done{background:#FFF4D8;border-color:#FFB347}
+.sticker-task.done .tcheck{background:#FFB347;border-color:#FFB347;color:#fff}
+.sticker-task.done .tname{text-decoration:none;color:#333}
+.sticker-mini{font-size:12px;color:#B28A60;font-weight:800;margin-top:2px}
+
 /* ===== 月間スタンプカード ===== */
 .stamp-card{background:#fff;border-radius:18px;padding:14px 14px 16px;box-shadow:0 2px 10px rgba(255,140,66,.1);border:2px solid #FFF0E0}
 .stamp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
@@ -169,6 +189,16 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
 </div>
 
 <div class="section">
+  <div class="stitle">🎟️ シールがもらえること</div>
+  <div class="sticker-card">
+    <div class="sticker-title"><span>図書カードまでのシール</span><span class="sticker-badge" id="stickerBadge">0まい</span></div>
+    <div class="sticker-bar"><div class="sticker-fill" id="stickerFill" style="width:0%"></div></div>
+    <div class="sticker-msg" id="stickerMsg">シールがもらえることを設定してね</div>
+  </div>
+  <div id="stickerList"></div>
+</div>
+
+<div class="section">
   <div class="stitle">🌟 今月のスタンプカード</div>
   <div class="stamp-card">
     <div class="stamp-head">
@@ -201,6 +231,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
     <div class="tabrow">
       <button class="tbtn active" id="tb-cal" onclick="switchTab('cal')">📅 カレンダー</button>
       <button class="tbtn" id="tb-tasks" onclick="switchTab('tasks')">✅ やること</button>
+      <button class="tbtn" id="tb-stickers" onclick="switchTab('stickers')">🎟️ シール</button>
       <button class="tbtn" id="tb-gen" onclick="switchTab('gen')">👤 その他</button>
     </div>
     <div id="pane-cal">
@@ -218,6 +249,12 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
       <div class="dtabs" id="dtabs"></div>
       <div id="tkarea" style="margin-bottom:12px"></div>
       <button class="atbtn" onclick="addRow()">＋ やることを ついか</button>
+    </div>
+    <div id="pane-stickers" style="display:none">
+      <label class="fl" style="margin-bottom:10px">シールがもらえることを いれてね</label>
+      <div id="stickerArea" style="margin-bottom:12px"></div>
+      <button class="atbtn" onclick="addStickerRow()">＋ シールのやることを ついか</button>
+      <div class="hint">ここに入れたものは、やるたびにシールが1まい増えます。100まいで図書カードの目安です。</div>
     </div>
     <div id="pane-gen" style="display:none">
       <div class="fg">
@@ -252,7 +289,7 @@ var editDow=dow;
 var stampViewY=tY;
 var stampViewM=tM;
 
-var S={childName:'',icalUrl:'',fixedTasks:[],tasks:{0:[],1:[],2:[],3:[],4:[],5:[],6:[]},done:{},stamps:{},events:[]};
+var S={childName:'',icalUrl:'',fixedTasks:[],tasks:{0:[],1:[],2:[],3:[],4:[],5:[],6:[]},done:{},eventDone:{},stamps:{},events:[],stickerTasks:[],stickerDone:{},stickerTotal:0};
 
 function pad(n){return('0'+n).slice(-2)}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -267,12 +304,22 @@ function loadS(){
       if(p.fixedTasks!==undefined)S.fixedTasks=p.fixedTasks;
       if(p.tasks!==undefined)S.tasks=p.tasks;
       if(p.done!==undefined)S.done=p.done;
+      if(p.eventDone!==undefined)S.eventDone=p.eventDone;
       if(p.stamps!==undefined)S.stamps=p.stamps;
       if(p.events!==undefined)S.events=p.events;
+      if(p.stickerTasks!==undefined)S.stickerTasks=p.stickerTasks;
+      if(p.stickerDone!==undefined)S.stickerDone=p.stickerDone;
+      if(p.stickerTotal!==undefined)S.stickerTotal=p.stickerTotal;
     }
   }catch(e){}
   if(!S.done[tstr])S.done[tstr]=[];
+  if(!S.eventDone)S.eventDone={};
+  if(!S.eventDone[tstr])S.eventDone[tstr]=[];
   if(!S.stamps)S.stamps={};
+  if(!S.stickerTasks)S.stickerTasks=[];
+  if(!S.stickerDone)S.stickerDone={};
+  if(!S.stickerDone[tstr])S.stickerDone[tstr]=[];
+  if(typeof S.stickerTotal!=='number')S.stickerTotal=0;
   Object.keys(S.done).forEach(function(k){if(k<tstr)delete S.done[k];});
 }
 function saveS(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S));}catch(e){}}
@@ -299,11 +346,18 @@ function getDoneKeys(){
   var done=S.done[tstr]||[];
   return done.map(function(v){return typeof v==='number'?'d'+v:String(v);});
 }
+function getEventKey(ev,i){
+  return 'e'+(ev.uid||((ev.time||'')+'|'+(ev.title||'')+'|'+i));
+}
+function getEventDoneKeys(){
+  return (S.eventDone&&S.eventDone[tstr]?S.eventDone[tstr]:[]).map(String);
+}
 function rProgress(){
-  var tasks=getTodayTasks(),done=getDoneKeys();
+  var tasks=getTodayTasks(),done=getDoneKeys(),evDone=getEventDoneKeys();
   var dn=0;
   tasks.forEach(function(t){if(done.indexOf(t.key)>=0)dn++;});
-  var tot=tasks.length;
+  (S.events||[]).forEach(function(ev,i){if(evDone.indexOf(getEventKey(ev,i))>=0)dn++;});
+  var tot=tasks.length+(S.events?S.events.length:0);
   var pct=tot?Math.round(dn/tot*100):0;
   document.getElementById('pbar').style.width=pct+'%';
   document.getElementById('ptxt').textContent=dn+' / '+tot+' おわった';
@@ -329,10 +383,14 @@ function rTasks(){
 
 
 function isTodayAllDone(){
-  var tasks=getTodayTasks(),done=getDoneKeys();
-  if(!tasks.length)return false;
+  var tasks=getTodayTasks(),done=getDoneKeys(),events=S.events||[],evDone=getEventDoneKeys();
+  var total=tasks.length+events.length;
+  if(!total)return false;
   for(var i=0;i<tasks.length;i++){
     if(done.indexOf(tasks[i].key)<0)return false;
+  }
+  for(var j=0;j<events.length;j++){
+    if(evDone.indexOf(getEventKey(events[j],j))<0)return false;
   }
   return true;
 }
@@ -427,13 +485,66 @@ function toggleTask(key){
   if(!wasAllDone&&nowAllDone)showFinishAnimation();
 }
 
+
+function toggleEvent(key){
+  var wasAllDone=isTodayAllDone();
+  if(!S.eventDone)S.eventDone={};
+  if(!S.eventDone[tstr])S.eventDone[tstr]=[];
+  var d=S.eventDone[tstr].map(String),pos=d.indexOf(String(key));
+  if(pos>=0)d.splice(pos,1);else d.push(String(key));
+  S.eventDone[tstr]=d;
+  var nowAllDone=isTodayAllDone();
+  syncTodayStamp();
+  saveS();rEvents();rProgress();rStampCard();
+  if(!wasAllDone&&nowAllDone)showFinishAnimation();
+}
+
+function getStickerKey(i){return 's'+i;}
+function getStickerDoneKeys(){return (S.stickerDone&&S.stickerDone[tstr]?S.stickerDone[tstr]:[]).map(String);}
+function rStickers(){
+  var list=document.getElementById('stickerList');
+  var total=Number(S.stickerTotal||0);
+  var cycle=total%100;
+  var cards=Math.floor(total/100);
+  var pct=cycle;
+  if(total>0&&cycle===0)pct=100;
+  document.getElementById('stickerBadge').textContent=total+'まい';
+  document.getElementById('stickerFill').style.width=pct+'%';
+  var remain=(100-cycle)%100;
+  if(total===0){remain=100;}
+  var msg='累計 '+total+'まい。図書カードまで あと '+remain+'まい';
+  if(cards>0)msg='図書カード '+cards+'まい分 達成！ 次まで あと '+(cycle===0?100:100-cycle)+'まい';
+  document.getElementById('stickerMsg').textContent=msg;
+  var tasks=S.stickerTasks||[],done=getStickerDoneKeys();
+  if(!tasks.length){list.innerHTML='<div class="emsg">⚙️ せっていから シールがもらえることを ついかしてね</div>';return;}
+  list.innerHTML=tasks.map(function(t,i){
+    var key=getStickerKey(i),isDone=done.indexOf(key)>=0;
+    return '<div class="tcard sticker-task'+(isDone?' done':'')+'" onclick="toggleSticker(\''+key+'\')">'
+      +'<div class="tcheck">'+(isDone?'✓':'')+'</div>'
+      +'<div class="temi">'+(t.emoji||'🎟️')+'</div>'
+      +'<div class="tname"><div>'+esc(t.name)+'</div><div class="sticker-mini">やったら シール 1まい</div></div></div>';
+  }).join('');
+}
+function toggleSticker(key){
+  if(!S.stickerDone)S.stickerDone={};
+  if(!S.stickerDone[tstr])S.stickerDone[tstr]=[];
+  var d=S.stickerDone[tstr].map(String),pos=d.indexOf(String(key));
+  if(pos>=0){d.splice(pos,1);S.stickerTotal=Math.max(0,Number(S.stickerTotal||0)-1);}
+  else{d.push(String(key));S.stickerTotal=Number(S.stickerTotal||0)+1;}
+  S.stickerDone[tstr]=d;
+  saveS();rStickers();
+}
+
 function rEvents(){
   var el=document.getElementById('evlist');
   if(!S.events||!S.events.length){
     el.innerHTML='<div class="emsg">⚙️ せっていから iCal URL を いれてね</div>';return;
   }
+  var done=getEventDoneKeys();
   el.innerHTML=S.events.map(function(ev,i){
-    return '<div class="ecard">'
+    var key=getEventKey(ev,i),isDone=done.indexOf(key)>=0;
+    return '<div class="ecard'+(isDone?' done':'')+'" onclick="toggleEvent(\''+key+'\')">'
+      +'<div class="echeck">'+(isDone?'✓':'')+'</div>'
       +'<div class="etime">'+(ev.time||'いちにち')+'</div>'
       +'<div class="eico">'+EI[i%EI.length]+'</div>'
       +'<div class="ename">'+esc(ev.title)+'</div></div>';
@@ -506,7 +617,7 @@ function extractEv(cur,log){
   if(digits.length===8){
     var match=(digits===todayFlat);
     log.push(sum+': allday '+digits+' match='+match);
-    if(match)return{title:sum,time:'いちにち',_sk:0};
+    if(match)return{title:sum,time:'いちにち',uid:cur['UID']||'',_sk:0};
     return null;
   }
 
@@ -541,13 +652,13 @@ function extractEv(cur,log){
     var timeStr=pad(jstDate.getUTCHours())+':'+pad(jstDate.getUTCMinutes());
     log.push(sum+': UTC '+dtRaw+' → JST '+timeStr+' jstFlat='+jstFlat+' match='+(jstFlat===todayFlat));
     if(jstFlat!==todayFlat)return null;
-    return{title:sum,time:timeStr,_sk:jstDate.getUTCHours()*60+jstDate.getUTCMinutes()};
+    return{title:sum,time:timeStr,uid:cur['UID']||'',_sk:jstDate.getUTCHours()*60+jstDate.getUTCMinutes()};
   } else {
     jstFlat=''+jstDate.getFullYear()+pad(jstDate.getMonth()+1)+pad(jstDate.getDate());
     var timeStr2=pad(jstDate.getHours())+':'+pad(jstDate.getMinutes());
     log.push(sum+': local '+dtRaw+' → '+timeStr2+' jstFlat='+jstFlat+' match='+(jstFlat===todayFlat));
     if(jstFlat!==todayFlat)return null;
-    return{title:sum,time:timeStr2,_sk:jstDate.getHours()*60+jstDate.getMinutes()};
+    return{title:sum,time:timeStr2,uid:cur['UID']||'',_sk:jstDate.getHours()*60+jstDate.getMinutes()};
   }
 }
 
@@ -592,7 +703,7 @@ async function fetchIcalData(url,statusEl,btnEl){
     statusEl.textContent=evs.length?'✅ きょうのよてい '+evs.length+'けん！':'✅ よみこんだよ！きょうのよていは ないみたい';
     statusEl.className='smsg ok';
   }
-  rEvents();
+  syncTodayStamp();saveS();rEvents();rProgress();rStampCard();
   return true;
 }
 
@@ -614,11 +725,12 @@ async function fetchFromSettings(){
 function switchTab(t){
   var taskPane=document.getElementById('pane-tasks');
   if(taskPane&&taskPane.style.display!=='none')collectTaskInputs();
-  ['cal','tasks','gen'].forEach(function(n){
+  ['cal','tasks','stickers','gen'].forEach(function(n){
     document.getElementById('pane-'+n).style.display=n===t?'block':'none';
     document.getElementById('tb-'+n).classList.toggle('active',n===t);
   });
   if(t==='tasks'){rDayTabs();rTaskArea();}
+  if(t==='stickers'){rStickerArea();}
 }
 function openSettings(){
   document.getElementById('cname').value=S.childName||'';
@@ -633,6 +745,7 @@ function closeSettings(){
   document.getElementById('ovl').classList.remove('show');
   document.getElementById('pane-tasks').style.display='none';
   document.getElementById('tkarea').innerHTML='';
+  var sa=document.getElementById('stickerArea');if(sa)sa.innerHTML='';
 }
 function ovlClick(e){if(e.target===document.getElementById('ovl'))closeSettings();}
 function taskTarget(){
@@ -673,6 +786,32 @@ function addRow(){
   if(els.length)els[els.length-1].focus();
 }
 function delRow(i){collectTaskInputs();taskTarget().splice(i,1);rTaskArea();}
+function collectStickerInputs(){
+  var rows=document.querySelectorAll('#stickerArea .terow'),saved=[];
+  for(var i=0;i<rows.length;i++){
+    var n=(document.getElementById('sn'+i)||{}).value||'';
+    var em=(document.getElementById('se'+i)||{}).value||'🎟️';
+    saved.push({name:n.trim(),emoji:em.trim()||'🎟️'});
+  }
+  S.stickerTasks=saved;
+}
+function rStickerArea(){
+  var tasks=S.stickerTasks||[];
+  document.getElementById('stickerArea').innerHTML=tasks.map(function(t,i){
+    return '<div class="terow">'
+      +'<input value="'+esc(t.emoji||'')+'" class="epick" maxlength="2" id="se'+i+'" placeholder="🎟️"/>'
+      +'<input value="'+esc(t.name||'')+'" id="sn'+i+'" placeholder="例：ピアノをれんしゅう"/>'
+      +'<button class="dbtn" onclick="delStickerRow('+i+')">✕</button></div>';
+  }).join('');
+}
+function addStickerRow(){
+  collectStickerInputs();
+  if(!S.stickerTasks)S.stickerTasks=[];
+  S.stickerTasks.push({name:'',emoji:'🎟️'});rStickerArea();
+  var els=document.querySelectorAll('#stickerArea [id^="sn"]');
+  if(els.length)els[els.length-1].focus();
+}
+function delStickerRow(i){collectStickerInputs();S.stickerTasks.splice(i,1);rStickerArea();}
 function saveSettings(){
   S.childName=document.getElementById('cname').value.trim();
   S.icalUrl=document.getElementById('ical-url').value.trim();
@@ -681,16 +820,25 @@ function saveSettings(){
     if(editDow==='fixed'){S.fixedTasks=(S.fixedTasks||[]).filter(function(t){return t.name;});}
     else{S.tasks[editDow]=(S.tasks[editDow]||[]).filter(function(t){return t.name;});}
   }
-  syncTodayStamp();saveS();closeSettings();rHeader();rTasks();rProgress();rStampCard();
+  if(document.getElementById('pane-stickers').style.display!=='none'){
+    collectStickerInputs();
+    S.stickerTasks=(S.stickerTasks||[]).filter(function(t){return t.name;});
+  }
+  syncTodayStamp();saveS();closeSettings();rHeader();rEvents();rTasks();rProgress();rStampCard();rStickers();
 }
 function resetDay(){
   if(confirm('きょうの チェックを ぜんぶ リセット する？')){
-    S.done[tstr]=[];delete S.stamps[tstr];saveS();rTasks();rProgress();rStampCard();closeSettings();
+    var sd=(S.stickerDone&&S.stickerDone[tstr])?S.stickerDone[tstr].length:0;
+    S.stickerTotal=Math.max(0,Number(S.stickerTotal||0)-sd);
+    S.done[tstr]=[];
+    if(S.eventDone)S.eventDone[tstr]=[];
+    if(S.stickerDone)S.stickerDone[tstr]=[];
+    delete S.stamps[tstr];saveS();rEvents();rTasks();rProgress();rStampCard();rStickers();closeSettings();
   }
 }
 
 // ========== 起動 ==========
-loadS();syncTodayStamp();saveS();rHeader();rEvents();rTasks();rProgress();rStampCard();
+loadS();syncTodayStamp();saveS();rHeader();rEvents();rTasks();rProgress();rStampCard();rStickers();
 if(S.icalUrl)autoFetch();
 </script>
 </body>
