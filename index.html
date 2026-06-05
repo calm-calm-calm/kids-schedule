@@ -768,11 +768,19 @@ function renderHistDay(dateStr){
 function switchTab(t){
   var taskPane=document.getElementById('pane-tasks');
   if(taskPane&&taskPane.style.display!=='none')collectTaskInputs();
+  // カレンダータブを離れる前にiCal URLを退避
+  var calPane=document.getElementById('pane-cal');
+  if(calPane&&calPane.style.display!=='none'){
+    var v=document.getElementById('ical-url').value.trim();
+    if(v)S.icalUrl=v;
+  }
   ['cal','tasks','gen'].forEach(function(n){
     document.getElementById('pane-'+n).style.display=n===t?'block':'none';
     document.getElementById('tb-'+n).classList.toggle('active',n===t);
   });
   if(t==='tasks'){rDayTabs();rTaskArea();}
+  // タブ切替後にカレンダータブを表示した場合は現在値をセット
+  if(t==='cal') document.getElementById('ical-url').value=S.icalUrl||'';
 }
 function openSettings(){
   document.getElementById('cname').value=S.childName||'';
@@ -831,16 +839,22 @@ function addRow(){
 }
 function delRow(i){collectTaskInputs();taskTarget().splice(i,1);rTaskArea();}
 function saveSettings(){
-  S.childName=document.getElementById('cname').value.trim();
-  var gt=parseInt(document.getElementById('goalTarget').value)||100;
-  S.goalTarget=gt>0?gt:100;
-  S.goalReward=document.getElementById('goalRewardText').value.trim();
-  S.goalBase=Math.max(0,parseInt(document.getElementById('goalBase').value)||0);
-  S.icalUrl=document.getElementById('ical-url').value.trim();
+  // 各タブは「表示中のときだけ」値を読む
+  if(document.getElementById('pane-cal').style.display!=='none'){
+    var icalInput=document.getElementById('ical-url').value.trim();
+    if(icalInput)S.icalUrl=icalInput;
+  }
   if(document.getElementById('pane-tasks').style.display!=='none'){
     collectTaskInputs();
     if(editDow==='fixed'){S.fixedTasks=(S.fixedTasks||[]).filter(function(t){return t.name;});}
     else{S.tasks[editDow]=(S.tasks[editDow]||[]).filter(function(t){return t.name;});}
+  }
+  if(document.getElementById('pane-gen').style.display!=='none'){
+    S.childName=document.getElementById('cname').value.trim();
+    var gt=parseInt(document.getElementById('goalTarget').value)||100;
+    S.goalTarget=gt>0?gt:100;
+    S.goalReward=document.getElementById('goalRewardText').value.trim();
+    S.goalBase=Math.max(0,parseInt(document.getElementById('goalBase').value)||0);
   }
   syncTodayStamp();saveS();closeSettings();rHeader();rTasks();rProgress();rStampCard();rGoalBar();
 }
