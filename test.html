@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>きょうのよていとやること [TEST]</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-height:100vh}
+.header{background:linear-gradient(135deg,#FF8C42,#FFB347);padding:22px 20px 30px;border-radius:0 0 30px 30px;text-align:center;position:relative;box-shadow:0 4px 20px rgba(255,140,66,.3);transition:background .4s}
+.header.past-mode{background:linear-gradient(135deg,#7A8A9A,#9AABB8)}
+.header h1{font-size:26px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.15)}
+.date-lbl{font-size:15px;color:rgba(255,255,255,.9);font-weight:700;margin-top:5px}
+.sbtn{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.3);border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center}
+.pw{background:rgba(255,255,255,.25);border-radius:20px;height:12px;margin:14px 24px 0;overflow:hidden}
+.pb{height:100%;background:#fff;border-radius:20px;transition:width .5s}
+.pt{font-size:13px;color:rgba(255,255,255,.95);font-weight:700;margin-top:6px;text-align:center}
+
+/* ===== 日付ナビゲーション ===== */
+.date-nav{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 16px 4px;max-width:760px;margin:0 auto}
+.dnav-btn{background:#fff;border:2px solid #FFD6B0;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;color:#E07A1F;cursor:pointer;transition:all .2s}
+.dnav-btn:hover{background:#FFF0E0;border-color:#FF8C42}
+.dnav-btn:disabled{opacity:.35;cursor:default;background:#F5F5F5;border-color:#DDD;color:#AAA}
+.dnav-date{font-size:14px;font-weight:900;color:#555;min-width:120px;text-align:center}
+.dnav-today{background:#FF8C42;color:#fff;border:none;border-radius:999px;padding:5px 13px;font-size:12px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer}
+.dnav-today:hover{background:#E07030}
+
+/* ===== 過去日バナー ===== */
+.past-banner{background:#EEF4F8;border:2px solid #B0C8D8;border-radius:14px;padding:10px 16px;margin-bottom:12px;text-align:center;font-size:14px;font-weight:800;color:#4A6A7A;display:none}
+.past-banner.show{display:block}
+
+.rrow{display:flex;align-items:center;justify-content:flex-end;padding:8px 14px 0;max-width:760px;margin:0 auto}
+.rbtn{background:none;border:none;color:#FF8C42;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px}
+.rbtn:hover{background:#FFE8C8}
+.section{margin:16px 14px 0}
+.stitle{font-size:17px;font-weight:800;color:#E07A1F;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.tcard{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;border:2.5px solid #F0E4D0;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:all .2s;user-select:none}
+.tcard:hover{border-color:#FF8C42;transform:translateY(-2px)}
+.tcard.done{background:#F0FAF0;border-color:#7CC47C;opacity:.85}
+.tcard.done .tname{text-decoration:line-through;color:#999}
+.tcard.readonly{cursor:default}
+.tcard.readonly:hover{border-color:#F0E4D0;transform:none}
+.tcheck{width:32px;height:32px;border-radius:50%;border:3px solid #DDCBB0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#fff}
+.tcard.done .tcheck{background:#7CC47C;border-color:#7CC47C;color:#fff}
+.temi{font-size:28px;min-width:36px;text-align:center}
+.tname{font-size:16px;font-weight:700;color:#333;flex:1}
+.emsg{text-align:center;padding:22px 16px;color:#CCC;font-size:14px;font-weight:600;line-height:1.9}
+.confetti{text-align:center;padding:14px;font-size:15px;font-weight:800;color:#FF8C42;display:none}
+.confetti.show{display:block;animation:bonce .5s ease}
+@keyframes bonce{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+/* ===== ご褒美バー ===== */
+.reward-bar{background:#fff;border-radius:18px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(255,140,66,.1);border:2px solid #FFF0E0}
+.reward-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.reward-title{font-size:15px;font-weight:900;color:#E07A1F;display:flex;align-items:center;gap:5px}
+.reward-goal-txt{font-size:13px;font-weight:800;color:#888}
+.reward-counts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.reward-count-item{background:#FFF9F0;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:800;color:#8B6A42;border:1.5px solid #F0E0C8}
+.reward-count-item span{font-size:16px;font-weight:900;color:#E07A1F;margin-right:2px}
+.reward-pw{background:#F0E8DC;border-radius:20px;height:14px;overflow:hidden;margin-bottom:8px}
+.reward-pb{height:100%;background:linear-gradient(90deg,#FF8C42,#FFB347);border-radius:20px;transition:width .6s}
+.reward-remain{font-size:13px;font-weight:800;color:#E07A1F;text-align:center}
+.reward-name{font-size:14px;font-weight:900;color:#555;text-align:center;margin-top:4px}
+.reward-complete{font-size:15px;font-weight:900;color:#4F9A4F;text-align:center;padding:6px;animation:bonce .5s ease}
+/* 外部シール表示：幅があれば長い表記、狭ければ短い表記 */
+.reward-ext-label-long{display:inline}
+.reward-ext-label-short{display:none}
+@media (max-width:400px){
+  .reward-ext-label-long{display:none}
+  .reward-ext-label-short{display:inline}
+}
+
+/* ===== スタンプカード ===== */
+.stamp-card{background:#fff;border-radius:18px;padding:14px 14px 16px;box-shadow:0 2px 10px rgba(255,140,66,.1);border:2px solid #FFF0E0}
+.stamp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.stamp-month{font-size:15px;font-weight:900;color:#333}
+.stamp-count{font-size:12px;font-weight:900;color:#E07A1F;background:#FFF0E0;border-radius:999px;padding:5px 10px;white-space:nowrap}
+.stamp-nav{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-bottom:10px}
+.stamp-navbtn{border:none;background:#FFF0E0;color:#E07A1F;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer}
+.stamp-navbtn:hover{background:#FFE3BF}
+.stamp-week,.stamp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.stamp-week{margin-bottom:7px}
+.stamp-wd{text-align:center;font-size:11px;font-weight:900;color:#C5A983}
+.stamp-day{aspect-ratio:1/1;border-radius:14px;background:#FFF9F0;border:2px solid #F3E4CE;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:42px}
+.stamp-day.blank{background:transparent;border-color:transparent}
+.stamp-day.future{opacity:.42}
+.stamp-day.today{border-color:#FF8C42;box-shadow:0 0 0 3px #FFE8C8}
+.stamp-num{font-size:11px;font-weight:900;color:#B28A60;line-height:1}
+.stamp-mark{font-size:19px;line-height:1;filter:grayscale(1);opacity:.35}
+.stamp-day.got{background:#FFF4D8;border-color:#FFD16B}
+.stamp-day.got .stamp-mark{filter:none;opacity:1;animation:stampPop .45s ease both}
+.stamp-day.got .stamp-num{color:#E07A1F}
+@keyframes stampPop{0%{transform:scale(.5) rotate(-12deg)}70%{transform:scale(1.18) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+
+/* ===== 設定パネル ===== */
+.ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+.ovl.show{display:flex}
+.spanel{background:#fff;border-radius:28px 28px 0 0;width:100%;max-width:640px;padding:24px 20px 32px;max-height:92vh;overflow-y:auto}
+.ptitle{font-size:19px;font-weight:900;color:#333;margin-bottom:16px;text-align:center}
+.tabrow{display:flex;border-radius:12px;overflow:hidden;border:2px solid #EEE;margin-bottom:20px;flex-wrap:wrap}
+.tbtn{flex:1;padding:10px 4px;border:none;background:#fff;font-size:11px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;color:#999;transition:all .2s;min-width:60px}
+.tbtn.active{background:#FF8C42;color:#fff}
+.fg{margin-bottom:16px}
+.fl{font-size:12px;font-weight:800;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;padding:11px 14px;border:2px solid #EEE;border-radius:12px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;color:#333;outline:none}
+.fi:focus{border-color:#FF8C42}
+.hint{font-size:12px;color:#AAA;font-weight:600;margin-top:5px;line-height:1.7}
+.fbtn{background:#34A853;color:#fff;border:none;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.fbtn:hover{background:#2C8F47}
+.fbtn:disabled{background:#AAA;cursor:not-allowed}
+.smsg{font-size:13px;font-weight:700;margin-top:6px;text-align:center;min-height:18px}
+.smsg.err{color:#E05050}.smsg.ok{color:#34A853}.smsg.inf{color:#888}
+.dtabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.dtab{padding:6px 13px;border-radius:20px;border:2px solid #EEE;font-size:13px;font-weight:800;cursor:pointer;background:#fff;color:#999;font-family:'Nunito',sans-serif;transition:all .2s}
+.dtab.active{background:#FF8C42;border-color:#FF8C42;color:#fff}
+.terow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.terow input{flex:1;padding:9px 12px;border:2px solid #EEE;border-radius:10px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;outline:none}
+.terow input:focus{border-color:#FF8C42}
+.epick{width:44px!important;flex:none!important;height:38px;border:2px solid #EEE!important;border-radius:10px!important;font-size:18px;text-align:center;background:#FFF9F0}
+.dbtn{width:32px;height:32px;border:none;border-radius:50%;background:#FFE8E8;color:#E05050;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.atbtn{background:#FFF0E0;border:2px dashed #FFB347;color:#E07A1F;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;border-radius:10px;padding:9px 14px;cursor:pointer;width:100%;margin-top:4px}
+.svbtn{background:#FF8C42;color:#fff;border:none;border-radius:16px;padding:14px;width:100%;font-size:16px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:8px}
+.svbtn:hover{background:#E07030}
+.clbtn{background:#F5F5F5;color:#888;border:none;border-radius:16px;padding:12px;width:100%;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:8px}
+.rstbtn{background:none;border:none;color:#E05050;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;text-decoration:underline;margin-top:6px;display:block;text-align:center;width:100%}
+.dvd{height:1px;background:#EEE;margin:14px 0}
+
+/* ===== ご褒美設定ペイン ===== */
+.reward-num-row{display:flex;align-items:center;gap:8px}
+.reward-num-row .fi{flex:1}
+.pm-btn{width:40px;height:40px;border:2px solid #EEE;border-radius:10px;background:#FFF9F0;color:#E07A1F;font-size:20px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif}
+.pm-btn:hover{background:#FFF0E0;border-color:#FF8C42}
+.reward-current{background:#FFF9F0;border-radius:12px;padding:10px 14px;margin-top:8px;font-size:13px;font-weight:700;color:#888;line-height:1.8;border:1.5px solid #F0E8DC}
+
+/* ===== もじ設定ペイン ===== */
+.display-opts{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.display-opt{display:flex;align-items:center;gap:10px;padding:13px 16px;border:2.5px solid #EEE;border-radius:14px;cursor:pointer;font-size:14px;font-weight:700;color:#555;background:#fff;transition:all .2s}
+.display-opt input[type="radio"]{accent-color:#FF8C42;width:18px;height:18px;flex-shrink:0}
+.display-opt.active{border-color:#FF8C42;background:#FFF9F0;color:#E07A1F}
+.display-opt:hover{border-color:#FFB347}
+
+/* ===== イベントカードのチェック ===== */
+.ecard{background:#fff;border-radius:16px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(255,140,66,.1);transition:all .2s}
+.ecard-done{background:#F0FAF0;border:2px solid #7CC47C;opacity:.85}
+.echk{width:28px;height:28px;border-radius:50%;border:3px solid #DDCBB0;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:#fff}
+.echk-done{background:#7CC47C;border-color:#7CC47C;color:#fff}
+.etime{font-size:13px;font-weight:700;color:#FF8C42;min-width:52px;text-align:center;background:#FFF0E0;border-radius:8px;padding:4px 6px}
+.ename{font-size:15px;font-weight:700;color:#333;flex:1}
+
+/* ===== シールセクション非表示（項目なし時） ===== */
+#sec-sticker-section:empty{display:none}
+
+/* ===== テストバッジ ===== */
+.test-badge{position:fixed;top:8px;left:8px;background:#E05050;color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px;z-index:999;font-family:'Nunito',sans-serif}
+
+/* ===== 完了アニメーション ===== */
+.finish-ovl{display:none;position:fixed;inset:0;z-index:300;background:radial-gradient(circle at center,rgba(255,255,255,.97),rgba(255,232,200,.94));align-items:center;justify-content:center;overflow:hidden;pointer-events:none}
+.finish-ovl.show{display:flex;animation:finishFade .35s ease both}
+.finish-card{position:relative;z-index:2;background:#fff;border-radius:28px;padding:28px 26px;text-align:center;box-shadow:0 16px 40px rgba(255,140,66,.28);animation:finishPop .7s cubic-bezier(.2,1.4,.35,1) both;max-width:86vw}
+.finish-main{font-size:58px;line-height:1;margin-bottom:12px;animation:finishBounce 1.1s ease infinite}
+.finish-title{font-size:26px;font-weight:900;color:#E07A1F;margin-bottom:8px}
+.finish-sub{font-size:15px;font-weight:800;color:#8B6A42}
+.finish-star{position:absolute;font-size:28px;animation:starFly 2.2s ease-out forwards;opacity:0;z-index:1}
+.finish-bubble{position:absolute;width:16px;height:16px;border-radius:50%;background:rgba(255,140,66,.28);animation:bubbleUp 2s ease-out forwards;z-index:1}
+@keyframes finishFade{from{opacity:0}to{opacity:1}}
+@keyframes finishPop{0%{transform:scale(.62) rotate(-6deg);opacity:0}70%{transform:scale(1.06) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes finishBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.05)}}
+@keyframes starFly{0%{transform:translateY(40px) scale(.5) rotate(0);opacity:0}15%{opacity:1}100%{transform:translateY(-120vh) scale(1.2) rotate(420deg);opacity:0}}
+@keyframes bubbleUp{0%{transform:translateY(30px) scale(.4);opacity:0}20%{opacity:1}100%{transform:translateY(-90vh) scale(1.8);opacity:0}}
+
+@media (min-width:700px){
+  body{padding:24px 24px 48px;background:linear-gradient(180deg,#FFF9F0 0%,#FFF3E4 100%)}
+  .header,.rrow,.section,.date-nav{max-width:760px;margin-left:auto;margin-right:auto}
+  .header{border-radius:30px;padding:28px 34px 34px}
+  .header h1{font-size:32px}
+  .date-lbl{font-size:17px}
+  .section{margin-top:20px}
+  .stitle{font-size:19px}
+  .ecard,.tcard{padding:16px 20px}
+  .stamp-card{padding:18px}
+  .stamp-day{min-height:58px;border-radius:18px}
+  .stamp-num{font-size:13px}
+  .stamp-mark{font-size:24px}
+  .spanel{border-radius:28px;max-height:88vh;margin-bottom:24px}
+}
+@media (min-width:1024px){
+  .header,.rrow,.section,.date-nav{max-width:840px}
+}
+</style>
+</head>
+<body>
+<div class="test-badge">TEST版</div>
+
+<div class="header" id="mainHeader">
+  <button class="sbtn" onclick="openSettings()">⚙️</button>
+  <div style="font-size:36px;margin-bottom:4px" id="hemi">☀️</div>
+  <h1 id="hgreet">きょうも がんばろう！</h1>
+  <div class="date-lbl" id="hdate"></div>
+  <div class="pw"><div class="pb" id="pbar" style="width:0%"></div></div>
+  <div class="pt" id="ptxt">0 / 0 おわった</div>
+</div>
+
+<!-- 日付ナビゲーション -->
+<div class="date-nav">
+  <button class="dnav-btn" id="dnav-prev" onclick="moveViewDate(-1)">← まえの日</button>
+  <div class="dnav-date" id="dnav-label"></div>
+  <button class="dnav-btn" id="dnav-next" onclick="moveViewDate(1)">つぎの日 →</button>
+  <button class="dnav-today" id="dnav-today" onclick="goToday()">きょう</button>
+</div>
+
+<div class="rrow">
+  <button class="rbtn" id="rbtn" onclick="autoFetch()">🔄 よていを こうしんする</button>
+</div>
+<div class="confetti" id="confetti">🎉 ぜんぶ できたよ！すごい！🎉</div>
+
+<div class="section">
+  <div class="stitle" id="sec-schedule">📅 きょうのよてい</div>
+  <div id="evlist"><div class="emsg">⚙️ せっていから iCal URL を いれてね</div></div>
+</div>
+
+<div class="section">
+  <div class="stitle" id="sec-tasks">✅ やること リスト</div>
+  <div class="past-banner" id="pastBanner">📅 これは むかしの きろくです。へんこうは できません。</div>
+  <div id="tklist"></div>
+</div>
+
+<div class="section" id="sec-sticker-section">
+  <div class="stitle" id="sec-sticker">🎟️ シールの やること</div>
+  <div id="stklist"></div>
+</div>
+
+<div class="section">
+  <div class="stitle" id="sec-stamp">🌟 今月のスタンプカード</div>
+
+  <!-- ご褒美バー -->
+  <div class="reward-bar" id="rewardBar">
+    <div class="reward-top">
+      <div class="reward-title" id="reward-title-lbl">🎁 ごほうびまで…</div>
+      <div class="reward-goal-txt" id="rewardGoalTxt"></div>
+    </div>
+    <div class="reward-counts" id="rewardCounts"></div>
+    <div class="reward-pw"><div class="reward-pb" id="rewardPb" style="width:0%"></div></div>
+    <div id="rewardRemain"></div>
+    <div id="rewardName"></div>
+  </div>
+
+  <div class="stamp-card">
+    <div class="stamp-head">
+      <div class="stamp-month" id="stampMonth"></div>
+      <div class="stamp-count" id="stampCount">0こ</div>
+    </div>
+    <div class="stamp-nav">
+      <button class="stamp-navbtn" id="stamp-prev-btn" onclick="moveStampMonth(-1)">← まえの月</button>
+      <button class="stamp-navbtn" id="stamp-this-btn" onclick="showThisMonth()">今月</button>
+      <button class="stamp-navbtn" id="stamp-next-btn" onclick="moveStampMonth(1)">つぎの月 →</button>
+    </div>
+    <div class="stamp-week">
+      <div class="stamp-wd">日</div><div class="stamp-wd">月</div><div class="stamp-wd">火</div><div class="stamp-wd">水</div><div class="stamp-wd">木</div><div class="stamp-wd">金</div><div class="stamp-wd">土</div>
+    </div>
+    <div class="stamp-grid" id="stampGrid"></div>
+  </div>
+</div>
+
+<div class="finish-ovl" id="finishOvl">
+  <div class="finish-card">
+    <div class="finish-main">🎉</div>
+    <div class="finish-title" id="finish-title-lbl">ぜんぶ できたよ！</div>
+    <div class="finish-sub" id="finish-sub-lbl">きょうの やること かんりょう！</div>
+  </div>
+</div>
+
+<!-- 設定パネル -->
+<div class="ovl" id="ovl" onclick="ovlClick(event)">
+  <div class="spanel">
+    <div class="ptitle" id="setting-title-lbl">⚙️ せってい</div>
+    <div class="tabrow">
+      <button class="tbtn active" id="tb-cal" onclick="switchTab('cal')">📅 カレンダー</button>
+      <button class="tbtn" id="tb-tasks" onclick="switchTab('tasks')">✅ やること</button>
+      <button class="tbtn" id="tb-sticker" onclick="switchTab('sticker')">🎟️ シール</button>
+      <button class="tbtn" id="tb-gen" onclick="switchTab('gen')">👧 なまえ</button>
+      <button class="tbtn" id="tb-reward" onclick="switchTab('reward')">🎁 ごほうび</button>
+      <button class="tbtn" id="tb-display" onclick="switchTab('display')">🔤 もじ</button>
+    </div>
+
+    <!-- カレンダーペイン -->
+    <div id="pane-cal">
+      <div class="fg">
+        <label class="fl" id="cal-label-lbl">Google カレンダー iCal URL</label>
+        <input class="fi" id="ical-url" placeholder="https://calendar.google.com/calendar/ical/..."/>
+        <div class="hint" id="cal-hint-lbl">📋 Googleカレンダー →「︙」→「設定と共有」→「カレンダーの統合」→「iCal形式の非公開URL」をコピー<br>⚠️ パソコンで直接ファイルを開いた場合のみ自動取得できます</div>
+      </div>
+      <button class="fbtn" id="fetch-btn" onclick="fetchFromSettings()">🔄 いますぐ よみこむ</button>
+      <div class="smsg" id="calmsg"></div>
+    </div>
+
+    <!-- やることペイン -->
+    <div id="pane-tasks" style="display:none">
+      <label class="fl" id="tasks-pane-hint" style="margin-bottom:10px">「毎日」または ようびを えらんで やることを いれてね</label>
+      <div class="dtabs" id="dtabs"></div>
+      <div id="tkarea" style="margin-bottom:12px"></div>
+      <button class="atbtn" id="tasks-add-btn" onclick="addRow()">＋ やることを ついか</button>
+    </div>
+
+    <!-- シールペイン -->
+    <div id="pane-sticker" style="display:none">
+      <label class="fl" style="margin-bottom:10px">「毎日」または ようびを えらんで シールやることを いれてね</label>
+      <div class="dtabs" id="stk-dtabs"></div>
+      <div id="stkarea" style="margin-bottom:12px"></div>
+      <button class="atbtn" onclick="addStickerRow()">＋ シールやることを ついか</button>
+    </div>
+
+    <!-- なまえペイン -->
+    <div id="pane-gen" style="display:none">
+      <div class="fg">
+        <label class="fl" id="name-label-lbl">こどもの なまえ</label>
+        <input class="fi" id="cname" placeholder="例：はなちゃん"/>
+      </div>
+    </div>
+
+    <!-- ご褒美ペイン -->
+    <div id="pane-reward" style="display:none">
+      <div class="fg">
+        <label class="fl" id="reward-goal-label-lbl">🎯 もくひょう シールまいすう</label>
+        <div class="reward-num-row">
+          <button class="pm-btn" onclick="adjustNum('rewardGoalInput',-10)">－</button>
+          <input class="fi" type="number" id="rewardGoalInput" min="1" max="9999" placeholder="100"/>
+          <button class="pm-btn" onclick="adjustNum('rewardGoalInput',10)">＋</button>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl" id="reward-text-label-lbl">🎁 ごほうびの ないよう</label>
+        <input class="fi" id="rewardTextInput" placeholder="例：ゲーム1じかん"/>
+      </div>
+      <div class="fg">
+        <label class="fl" id="reward-ext-label-lbl">➕ ほかであつめたシールのまい数</label>
+        <div class="reward-num-row">
+          <button class="pm-btn" onclick="adjustNum('externalStampsInput',-1)">－</button>
+          <input class="fi" type="number" id="externalStampsInput" min="0" max="9999" placeholder="0"/>
+          <button class="pm-btn" onclick="adjustNum('externalStampsInput',1)">＋</button>
+        </div>
+        <div class="hint" id="reward-ext-hint-lbl">アプリのそとで あつめた シールのまいすうを てで にゅうりょくしてね</div>
+      </div>
+      <div class="reward-current" id="rewardCurrentInfo"></div>
+    </div>
+
+    <!-- もじ設定ペイン -->
+    <div id="pane-display" style="display:none">
+      <!-- rDisplayPane() で動的に描画 -->
+    </div>
+
+    <div class="dvd"></div>
+    <button class="svbtn" id="save-btn-lbl" onclick="saveSettings()">💾 ほぞんする</button>
+    <button class="rstbtn" id="reset-btn-lbl" onclick="resetDay()">きょうの チェックを リセット</button>
+    <button class="clbtn" id="close-btn-lbl" onclick="closeSettings()">とじる</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 定数・初期設定
+// ============================================================
+var DJ=['にちようび','げつようび','かようび','すいようび','もくようび','きんようび','どようび'];
+var DS=['日','月','火','水','木','金','土'];
+var MN=['1','2','3','4','5','6','7','8','9','10','11','12'];
+var EI=['🏫','⚽','🎹','🏊','📖','🎮','🍱','🎨','🌸','🚌','🎯','🎪'];
+
+// ★ テスト用ストレージキー（本番 kpv6 は絶対に使わない）
+var STORE_KEY = 'kpv6_test';
+
+// 今日の日付をJST基準で取得
+var nowUTC = new Date();
+var nowJST = new Date(nowUTC.getTime() + 9 * 3600 * 1000);
+var dow = nowJST.getUTCDay();
+var tY = nowJST.getUTCFullYear();
+var tM = nowJST.getUTCMonth() + 1;
+var tD = nowJST.getUTCDate();
+var tstr = tY + '-' + pad(tM) + '-' + pad(tD);
+var todayFlat = ('' + tY) + pad(tM) + pad(tD);
+
+// 表示中の日付（今日 = tstr から開始）
+var viewDate = tstr;
+
+var editDow = dow;
+var stampViewY = tY;
+var stampViewM = tM;
+
+// ============================================================
+// 固定文言（labelMode切り替え用）
+// ============================================================
+var LABELS = {
+  easy: {
+    // ヘッダー
+    greetMorning:     'おはよう！',
+    greetDay:         'きょうも がんばろう！',
+    greetEvening:     'おつかれさま！',
+    greetPast:        'むかしの きろく',
+    // 日付ナビ
+    prevDay:          '← まえの日',
+    nextDay:          'つぎの日 →',
+    today:            'きょう',
+    pastBanner:       '📅 これは むかしの きろくです。へんこうは できません。',
+    // 進捗
+    progressTxt:      'おわった',
+    // セクションタイトル
+    secSchedule:      '📅 きょうのよてい',
+    secTasks:         '✅ やること リスト',
+    secStamp:         '🌟 今月のスタンプカード',
+    // タスク空欄
+    taskEmpty:        'やることが まだ ないよ\n⚙️ せっていから ついかしてね！',
+    // イベント一覧
+    evlistEmpty:      '⚙️ せっていから iCal URL を いれてね',
+    evAllDay:         'いちにち',
+    // iCal取得メッセージ
+    calNoUrl:         'iCal URL が せっていされていないよ',
+    calLoadingBase:   'よみこんでいます…',
+    calError:         'よみこめなかったよ😢 URLを かくにんしてね',
+    calSuccessPre:    '✅ きょうのよてい ',
+    calSuccessSuf:    'けん！',
+    calSuccessEmpty:  '✅ よみこんだよ！きょうのよていは ないみたい',
+    // 更新ボタン
+    refreshBtn:       '🔄 よていを こうしんする',
+    refreshLoading:   'よみこんでいます…',
+    // confetti
+    confettiMsg:      '🎉 ぜんぶ できたよ！すごい！🎉',
+    // 完了カード
+    finishTitle:      'ぜんぶ できたよ！',
+    finishSub:        'きょうの やること かんりょう！',
+    // ご褒美バー
+    rewardTitle:      '🎁 ごほうびまで…',
+    rewardGoalLbl:    'もくひょう：',
+    rewardUnit:       'まい',
+    rewardAppLbl:     'アプリ内：',
+    rewardExtLong:    'ほかであつめたシール',
+    rewardExtShort:   'ほかのシール',
+    rewardTotalLbl:   'ごうけい：',
+    rewardAchieved:   '🎊 もくひょう たっせい！おめでとう！',
+    rewardRemainPre:  'あと',
+    rewardRemainSuf:  'まいで ごほうび！',
+    rewardPrefix:     '🎁 ',
+    rewardComplete:   '🎁 ごほうびは「',
+    rewardCompleteSuf:'」だよ！',
+    // スタンプカード
+    stampNen:         'ねん ',
+    stampGatsu:       'がつ',
+    stampCount:       'こ あつめた',
+    stampPrevMonth:   '← まえの月',
+    stampThisMonth:   '今月',
+    stampNextMonth:   'つぎの月 →',
+    // 設定パネル共通
+    settingTitle:     '⚙️ せってい',
+    tabCal:           '📅 カレンダー',
+    tabTasks:         '✅ やること',
+    tabName:          '👧 なまえ',
+    tabReward:        '🎁 ごほうび',
+    tabDisplay:       '🔤 もじ',
+    tabSticker:       '🎟️ シール',
+    secSticker:       '🎟️ シールの やること',
+    stickerEmpty:     '',
+    saveBtn:          '💾 ほぞんする',
+    resetBtn:         'きょうの チェックを リセット',
+    resetConfirm:     'きょうの チェックを ぜんぶ リセット する？',
+    closeBtn:         'とじる',
+    // カレンダーペイン
+    calLabel:         'Google カレンダー iCal URL',
+    calHint:          '📋 Googleカレンダー →「︙」→「設定と共有」→「カレンダーの統合」→「iCal形式の非公開URL」をコピー\n⚠️ パソコンで直接ファイルを開いた場合のみ自動取得できます',
+    calFetchBtn:      '🔄 いますぐ よみこむ',
+    // やることペイン
+    tasksPaneHint:    '「毎日」または ようびを えらんで やることを いれてね',
+    tasksAddBtn:      '＋ やることを ついか',
+    // なまえペイン
+    nameLabel:        'こどもの なまえ',
+    namePlaceholder:  '例：はなちゃん',
+    // ご褒美設定ペイン
+    rewardGoalLabel:  '🎯 もくひょう シールまいすう',
+    rewardTextLabel:  '🎁 ごほうびの ないよう',
+    rewardExtLabel:   '➕ ほかであつめたシールのまい数',
+    rewardExtHint:    'アプリのそとで あつめた シールのまいすうを てで にゅうりょくしてね',
+    rewardInfoTitle:  '【いまの じょうたい】',
+    rewardInfoApp:    'アプリ内シール：',
+    rewardInfoExt:    'ほかで あつめた：',
+    rewardInfoTotal:  'ごうけい：',
+    // もじ設定ペイン
+    displayTitle:     'もじの ひょうじ を えらんでね',
+    displayEasy:      'やさしい（ひらがな おおめ）',
+    displayNormal:    'ふつう（かんじ あり）',
+    displaySaveNote:  '※ せってい画面を ほぞんすると きりかわります'
+  },
+  normal: {
+    greetMorning:     'おはようございます！',
+    greetDay:         '今日もがんばろう！',
+    greetEvening:     'おつかれさまでした！',
+    greetPast:        '過去の記録',
+    prevDay:          '← 前の日',
+    nextDay:          '次の日 →',
+    today:            '今日',
+    pastBanner:       '📅 過去の記録のため編集できません',
+    progressTxt:      '完了',
+    secSchedule:      '📅 今日の予定',
+    secTasks:         '✅ やることリスト',
+    secStamp:         '🌟 今月のスタンプカード',
+    taskEmpty:        'やることがまだありません\n⚙️ 設定から追加してください',
+    evlistEmpty:      '⚙️ 設定から iCal URL を入れてください',
+    evAllDay:         '終日',
+    calNoUrl:         'iCal URL が設定されていません',
+    calLoadingBase:   '読み込み中…',
+    calError:         '読み込めませんでした😢 URLを確認してください',
+    calSuccessPre:    '✅ 今日の予定 ',
+    calSuccessSuf:    '件！',
+    calSuccessEmpty:  '✅ 読み込み完了。今日の予定はありません',
+    refreshBtn:       '🔄 予定を更新する',
+    refreshLoading:   '読み込み中…',
+    confettiMsg:      '🎉 全部できたよ！すごい！🎉',
+    finishTitle:      '全部できたよ！',
+    finishSub:        '今日のやること完了！',
+    rewardTitle:      '🎁 ご褒美まで…',
+    rewardGoalLbl:    '目標：',
+    rewardUnit:       '枚',
+    rewardAppLbl:     'アプリ内：',
+    rewardExtLong:    'ほかで集めたシール',
+    rewardExtShort:   'ほかのシール',
+    rewardTotalLbl:   '合計：',
+    rewardAchieved:   '🎊 目標達成！おめでとうございます！',
+    rewardRemainPre:  'あと',
+    rewardRemainSuf:  '枚でご褒美！',
+    rewardPrefix:     '🎁 ',
+    rewardComplete:   '🎁 ご褒美は「',
+    rewardCompleteSuf:'」です！',
+    stampNen:         '年',
+    stampGatsu:       '月',
+    stampCount:       '個 獲得',
+    stampPrevMonth:   '← 前の月',
+    stampThisMonth:   '今月',
+    stampNextMonth:   '次の月 →',
+    settingTitle:     '⚙️ 設定',
+    tabCal:           '📅 カレンダー',
+    tabTasks:         '✅ やること',
+    tabName:          '👧 名前',
+    tabReward:        '🎁 ご褒美',
+    tabDisplay:       '🔤 文字',
+    tabSticker:       '🎟️ シール',
+    secSticker:       '🎟️ シールのやること',
+    stickerEmpty:     '',
+    saveBtn:          '💾 保存する',
+    resetBtn:         '今日のチェックをリセット',
+    resetConfirm:     '今日のチェックを全部リセットしますか？',
+    closeBtn:         '閉じる',
+    calLabel:         'Google カレンダー iCal URL',
+    calHint:          '📋 Googleカレンダー →「︙」→「設定と共有」→「カレンダーの統合」→「iCal形式の非公開URL」をコピー\n⚠️ パソコンで直接ファイルを開いた場合のみ自動取得できます',
+    calFetchBtn:      '🔄 今すぐ読み込む',
+    tasksPaneHint:    '「毎日」または曜日を選んでやることを入力してください',
+    tasksAddBtn:      '＋ やることを追加',
+    nameLabel:        '子どもの名前',
+    namePlaceholder:  '例：はなちゃん',
+    rewardGoalLabel:  '🎯 目標シール枚数',
+    rewardTextLabel:  '🎁 ご褒美の内容',
+    rewardExtLabel:   '➕ ほかで集めたシールの枚数',
+    rewardExtHint:    'アプリ外で集めたシールの枚数を入力してください',
+    rewardInfoTitle:  '【現在の状況】',
+    rewardInfoApp:    'アプリ内シール：',
+    rewardInfoExt:    'ほかで集めた：',
+    rewardInfoTotal:  '合計：',
+    displayTitle:     '文字の表示を選んでください',
+    displayEasy:      'やさしい（ひらがな多め）',
+    displayNormal:    'ふつう（漢字あり）',
+    displaySaveNote:  '※「保存する」ボタンを押すと切り替わります'
+  }
+};
+
+// 現在のlabelModeに応じた文言を返すヘルパー
+function L(key) {
+  var mode = (S.labelMode === 'normal') ? 'normal' : 'easy';
+  return LABELS[mode][key] || LABELS['easy'][key] || '';
+}
+
+// ============================================================
+// データ構造
+// ============================================================
+var S = {
+  childName: '',
+  icalUrl: '',
+  fixedTasks: [],
+  tasks: {0:[],1:[],2:[],3:[],4:[],5:[],6:[]},
+  done: {},
+  stamps: {},
+  events: [],
+  // ★ 追加フィールド（既存データにない場合はデフォルト値）
+  rewardGoal: 100,
+  rewardText: '',
+  externalStamps: 0,
+  labelMode: 'easy',
+  // ★ 復活フィールド
+  eventDone:         {},   // 日付別イベントチェック
+  fixedStickerTasks: [],   // 毎日のシール項目 [{name, emoji}, ...]
+  stickerTasks:      {0:[],1:[],2:[],3:[],4:[],5:[],6:[]}, // 曜日別シール項目
+  stickerDone:       {},   // 日付別シールチェック
+  stickerTotal:      0     // 累計シール獲得数
+};
+
+// ============================================================
+// ユーティリティ
+// ============================================================
+function pad(n) { return ('0' + n).slice(-2); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// 日付文字列 "YYYY-MM-DD" → Dateオブジェクト（JST基準）
+function dateStrToJST(ds) {
+  var p = ds.split('-');
+  return new Date(Date.UTC(+p[0], +p[1]-1, +p[2]));
+}
+// Dateオブジェクト → "YYYY-MM-DD"（UTC値を使う）
+function dateToStr(d) {
+  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth()+1) + '-' + pad(d.getUTCDate());
+}
+// "YYYY-MM-DD" → 曜日インデックス（0=日）
+function dowOfDateStr(ds) {
+  return dateStrToJST(ds).getUTCDay();
+}
+
+// 曜日配列（表示用）
+var DJ_EASY   = ['にちようび','げつようび','かようび','すいようび','もくようび','きんようび','どようび'];
+var DS_SHORT  = ['日','月','火','水','木','金','土'];
+var DJ_NORMAL = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+
+// "YYYY-MM-DD" → ヘッダー用フル日付文字列（labelMode対応）
+// easy:   2026ねん 6がつ 5にち（きんようび）
+// normal: 2026年 6月 5日（金曜日）
+function formatFullDate(ds) {
+  var p   = ds.split('-');
+  var y   = +p[0];
+  var m   = +p[1];       // 先頭0を除去
+  var d   = +p[2];       // 先頭0を除去
+  var dw  = dowOfDateStr(ds);
+  if (S.labelMode === 'normal') {
+    return y + '年 ' + m + '月 ' + d + '日（' + DJ_NORMAL[dw] + '）';
+  } else {
+    return y + 'ねん ' + m + 'がつ ' + d + 'にち（' + DJ_EASY[dw] + '）';
+  }
+}
+
+// "YYYY-MM-DD" → 日付ナビ用短い日付文字列（labelMode対応）
+// easy:   6がつ 5にち（金）
+// normal: 6月5日（金）
+function formatShortDate(ds) {
+  var p   = ds.split('-');
+  var m   = +p[1];
+  var d   = +p[2];
+  var dw  = dowOfDateStr(ds);
+  if (S.labelMode === 'normal') {
+    return m + '月' + d + '日（' + DS_SHORT[dw] + '）';
+  } else {
+    return m + 'がつ ' + d + 'にち（' + DS_SHORT[dw] + '）';
+  }
+}
+
+// ============================================================
+// ストレージ読み書き
+// ============================================================
+function loadS() {
+  try {
+    var r = localStorage.getItem(STORE_KEY);
+    if (r) {
+      var p = JSON.parse(r);
+      if (p.childName   !== undefined) S.childName   = p.childName;
+      if (p.icalUrl     !== undefined) S.icalUrl     = p.icalUrl;
+      if (p.fixedTasks  !== undefined) S.fixedTasks  = p.fixedTasks;
+      if (p.tasks       !== undefined) S.tasks       = p.tasks;
+      if (p.done        !== undefined) S.done        = p.done;
+      if (p.stamps      !== undefined) S.stamps      = p.stamps;
+      if (p.events      !== undefined) S.events      = p.events;
+      // ★ 追加フィールド：存在する場合のみ上書き（なければデフォルト値を維持）
+      if (p.rewardGoal     !== undefined) S.rewardGoal     = p.rewardGoal;
+      if (p.rewardText     !== undefined) S.rewardText     = p.rewardText;
+      if (p.externalStamps !== undefined) S.externalStamps = p.externalStamps;
+      if (p.labelMode      !== undefined) S.labelMode      = p.labelMode;
+      // ★ 復活フィールド：存在する場合のみ上書き
+      if (p.eventDone    !== undefined) S.eventDone    = p.eventDone;
+      // ★ stickerTasks: 旧形式（配列）→ fixedStickerTasks として引き継ぎ
+      if (p.stickerTasks !== undefined) {
+        if (Array.isArray(p.stickerTasks)) {
+          // 旧データ（配列）→ fixedStickerTasks に移行（メモリ上のみ。saveS()しない）
+          S.fixedStickerTasks = p.stickerTasks;
+          S.stickerTasks = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+        } else {
+          // 新形式（オブジェクト）→ そのまま読み込む
+          S.stickerTasks = p.stickerTasks;
+        }
+      }
+      if (p.fixedStickerTasks !== undefined) S.fixedStickerTasks = p.fixedStickerTasks;
+      if (p.stickerDone  !== undefined) S.stickerDone  = p.stickerDone;
+      if (p.stickerTotal !== undefined) S.stickerTotal = p.stickerTotal;
+    }
+  } catch(e) {
+    // 読み込み失敗時はデフォルト値のまま（絶対に上書き保存しない）
+    return;
+  }
+  // ★ done の過去分削除ロジックを削除 → 蓄積させて履歴として使う
+  // （旧: Object.keys(S.done).forEach(...) は廃止）
+
+  // done[tstr] が未定義なら空配列を初期化（今日分のみ）
+  if (!S.done[tstr])       S.done[tstr]       = [];
+  if (!S.eventDone[tstr]) S.eventDone[tstr] = [];
+  if (!S.stickerDone[tstr]) S.stickerDone[tstr] = [];
+  if (!S.stamps) S.stamps = {};
+}
+
+function saveS() {
+  // ★ localStorage.clear() / removeItem() 禁止
+  // ★ STORE_KEY = 'kpv6_test' のみ書き込む
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(S));
+  } catch(e) {}
+}
+
+// ============================================================
+// 日付ナビゲーション（改修1）
+// ============================================================
+
+// 表示日を delta 日分移動
+function moveViewDate(delta) {
+  var d = dateStrToJST(viewDate);
+  d.setUTCDate(d.getUTCDate() + delta);
+  var next = dateToStr(d);
+  // 未来（今日より先）には移動しない
+  if (next > tstr) return;
+  setViewDate(next);
+}
+
+// 今日に戻る
+function goToday() {
+  setViewDate(tstr);
+}
+
+// 表示日を設定して画面全体を再描画
+function setViewDate(ds) {
+  viewDate = ds;
+  rDateNav();
+  rHeader();
+  rEvents();
+  rTasks();
+  rStickers();
+  rProgress();
+}
+
+// 日付ナビゲーションバーの描画
+function rDateNav() {
+  var el = document.getElementById('dnav-label');
+  if (!el) return;
+  var isToday = (viewDate === tstr);
+  el.textContent = formatShortDate(viewDate);
+  document.getElementById('dnav-prev').textContent = L('prevDay');
+  document.getElementById('dnav-next').textContent = L('nextDay');
+  document.getElementById('dnav-next').disabled = isToday;
+  var todayBtn = document.getElementById('dnav-today');
+  todayBtn.textContent = L('today');
+  todayBtn.style.display = isToday ? 'none' : 'inline-block';
+  // 過去バナー
+  var banner = document.getElementById('pastBanner');
+  if (banner) {
+    banner.textContent = L('pastBanner');
+    if (isToday) banner.classList.remove('show');
+    else banner.classList.add('show');
+  }
+  // ヘッダー色
+  var hdr = document.getElementById('mainHeader');
+  if (hdr) {
+    if (isToday) hdr.classList.remove('past-mode');
+    else hdr.classList.add('past-mode');
+  }
+}
+
+// ============================================================
+// ヘッダー描画
+// ============================================================
+function rHeader() {
+  var isToday = (viewDate === tstr);
+  var h = nowJST.getUTCHours();
+  var g, em;
+  if (isToday) {
+    if (h < 10)      { g = L('greetMorning'); em = '🌅'; }
+    else if (h < 17) { g = L('greetDay');     em = '☀️'; }
+    else             { g = L('greetEvening'); em = '🌙'; }
+    if (S.childName) g = S.childName + '、' + g;
+  } else {
+    g = L('greetPast');
+    em = '📖';
+  }
+  document.getElementById('hemi').textContent = em;
+  document.getElementById('hgreet').textContent = g;
+  document.getElementById('hdate').textContent = formatFullDate(viewDate);
+}
+
+// ============================================================
+// タスク関連ユーティリティ
+// ============================================================
+
+// viewDate の曜日に応じたタスクリストを返す
+function getTasksForDate(ds) {
+  var dw = dowOfDateStr(ds);
+  var list = [];
+  (S.fixedTasks || []).forEach(function(t, i) {
+    list.push({ key: 'f' + i, name: t.name, emoji: t.emoji });
+  });
+  (S.tasks[dw] || []).forEach(function(t, i) {
+    list.push({ key: 'd' + i, name: t.name, emoji: t.emoji });
+  });
+  return list;
+}
+
+// 指定日の done キー配列を返す（読み取り専用）
+function getDoneKeysForDate(ds) {
+  var done = S.done[ds] || [];
+  return done.map(function(v) { return typeof v === 'number' ? 'd' + v : String(v); });
+}
+
+// ============================================================
+// タスクリスト描画（改修1：viewDate対応・過去日readonly）
+// ============================================================
+function rTasks() {
+  var isToday = (viewDate === tstr);
+  var tasks = getTasksForDate(viewDate);
+  var done = getDoneKeysForDate(viewDate);
+  var el = document.getElementById('tklist');
+  if (!tasks.length) {
+    var lines = L('taskEmpty').split('\n');
+    el.innerHTML = '<div class="emsg">' + lines.map(function(l){return esc(l);}).join('<br>') + '</div>';
+    return;
+  }
+  el.innerHTML = tasks.map(function(t) {
+    var isDone = done.indexOf(t.key) >= 0;
+    if (isToday) {
+      return '<div class="tcard' + (isDone ? ' done' : '') + '" onclick="toggleTask(\'' + t.key + '\')">'
+        + '<div class="tcheck">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="temi">' + (t.emoji || '📝') + '</div>'
+        + '<div class="tname">' + esc(t.name) + '</div></div>';
+    } else {
+      return '<div class="tcard readonly' + (isDone ? ' done' : '') + '">'
+        + '<div class="tcheck">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="temi">' + (t.emoji || '📝') + '</div>'
+        + '<div class="tname">' + esc(t.name) + '</div></div>';
+    }
+  }).join('');
+}
+
+// ============================================================
+// 進捗バー描画（改修1：viewDate対応）
+// ============================================================
+function rProgress() {
+  var isToday = (viewDate === tstr);
+  // タスク
+  var tasks = getTasksForDate(viewDate);
+  var done  = getDoneKeysForDate(viewDate);
+  var dn = 0, tot = tasks.length;
+  tasks.forEach(function(t) { if (done.indexOf(t.key) >= 0) dn++; });
+  // イベント（シール項目は含めない）
+  var evs    = (S.events || []);
+  var evDone = S.eventDone[viewDate] || [];
+  tot += evs.length;
+  evs.forEach(function(ev, i) { if (evDone.indexOf(getEventKey(i)) >= 0) dn++; });
+
+  var pct = tot ? Math.round(dn / tot * 100) : 0;
+  document.getElementById('pbar').style.width = pct + '%';
+  document.getElementById('ptxt').textContent = dn + ' / ' + tot + ' ' + L('progressTxt');
+
+  var c = document.getElementById('confetti');
+  if (isToday && tot > 0 && dn >= tot) c.classList.add('show');
+  else c.classList.remove('show');
+}
+
+// ============================================================
+// タスクのON/OFF切り替え（今日のみ有効）
+// ============================================================
+function toggleTask(key) {
+  // ★ 今日以外は絶対に実行しない（二重防衛）
+  if (viewDate !== tstr) return;
+
+  var wasAllDone = isTodayAllDone();
+  if (!S.done[tstr]) S.done[tstr] = [];
+  var d = getDoneKeysForDate(tstr);
+  var pos = d.indexOf(String(key));
+  if (pos >= 0) d.splice(pos, 1);
+  else d.push(String(key));
+  S.done[tstr] = d;
+
+  var nowAllDone = isTodayAllDone();
+  // ★ syncTodayStamp は今日の stamps のみ操作
+  syncTodayStamp();
+  saveS();
+  rTasks();
+  rEvents();
+  rStickers();
+  rProgress();
+  rStampCard();
+  rRewardBar();
+  if (!wasAllDone && nowAllDone) showFinishAnimation();
+}
+
+// 今日の全項目（タスク＋イベント）が完了しているか（シール項目は含めない）
+function isTodayAllDone() {
+  var tasks = getTasksForDate(tstr);
+  var done  = getDoneKeysForDate(tstr);
+  // タスクチェック
+  for (var i = 0; i < tasks.length; i++) {
+    if (done.indexOf(tasks[i].key) < 0) return false;
+  }
+  // イベントチェック
+  var evs    = (S.events || []);
+  var evDone = S.eventDone[tstr] || [];
+  for (var j = 0; j < evs.length; j++) {
+    if (evDone.indexOf(getEventKey(j)) < 0) return false;
+  }
+  // タスクもイベントも0件なら未完了
+  if (!tasks.length && !evs.length) return false;
+  return true;
+}
+
+// ============================================================
+// スタンプ同期（今日のみ）
+// ============================================================
+function syncTodayStamp() {
+  // ★ tstr（今日）のみを対象とする。viewDate は一切参照しない。
+  if (!S.stamps) S.stamps = {};
+  if (isTodayAllDone()) S.stamps[tstr] = true;
+  else delete S.stamps[tstr];
+}
+
+// ============================================================
+// ご褒美バー関連（改修2・3）
+// ============================================================
+
+// アプリ内シール数 = stickerTotal（stamps とは別管理）
+function countAppStamps() {
+  return S.stickerTotal || 0;
+}
+
+// 合計シール数（アプリ内 + 外部）を計算
+function calcTotalStamps() {
+  return countAppStamps() + (S.externalStamps || 0);
+}
+
+// ご褒美バーの描画
+function rRewardBar() {
+  var goal = S.rewardGoal || 100;
+  var appCount = countAppStamps();
+  var ext = S.externalStamps || 0;
+  var total = appCount + ext;
+  var pct = Math.min(100, Math.round(total / goal * 100));
+  var remain = Math.max(0, goal - total);
+  var text = S.rewardText || '';
+
+  var goalTxt = document.getElementById('rewardGoalTxt');
+  if (goalTxt) goalTxt.textContent = L('rewardGoalLbl') + goal + L('rewardUnit');
+
+  var countsEl = document.getElementById('rewardCounts');
+  if (countsEl) {
+    countsEl.innerHTML =
+      '<div class="reward-count-item">' + L('rewardAppLbl') + '<span>' + appCount + '</span>' + L('rewardUnit') + '</div>' +
+      '<div class="reward-count-item"><span class="reward-ext-label-long">' + L('rewardExtLong') + '</span><span class="reward-ext-label-short">' + L('rewardExtShort') + '</span>：<span>' + ext + '</span>' + L('rewardUnit') + '</div>' +
+      '<div class="reward-count-item">' + L('rewardTotalLbl') + '<span>' + total + '</span>' + L('rewardUnit') + '</div>';
+  }
+
+  var pb = document.getElementById('rewardPb');
+  if (pb) pb.style.width = pct + '%';
+
+  var remainEl = document.getElementById('rewardRemain');
+  var nameEl   = document.getElementById('rewardName');
+  if (total >= goal) {
+    if (remainEl) remainEl.innerHTML = '<div class="reward-complete">' + L('rewardAchieved') + '</div>';
+    if (nameEl)   nameEl.textContent = text ? L('rewardComplete') + text + L('rewardCompleteSuf') : '';
+  } else {
+    if (remainEl) remainEl.innerHTML = '<div class="reward-remain">' + L('rewardRemainPre') + ' <strong>' + remain + '</strong> ' + L('rewardRemainSuf') + '</div>';
+    if (nameEl)   nameEl.textContent = text ? L('rewardPrefix') + text : '';
+  }
+}
+
+// ============================================================
+// スタンプカード描画
+// ============================================================
+function daysInMonth(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+function firstDowOfMonth(y, m) { return new Date(Date.UTC(y, m-1, 1)).getUTCDay(); }
+function dateKey(y, m, d) { return y + '-' + pad(m) + '-' + pad(d); }
+
+function rStampCard() {
+  var grid = document.getElementById('stampGrid');
+  if (!grid) return;
+  if (!S.stamps) S.stamps = {};
+  var y = stampViewY, m = stampViewM;
+  document.getElementById('stampMonth').textContent = y + L('stampNen') + m + L('stampGatsu');
+  var days = daysInMonth(y, m);
+  var first = firstDowOfMonth(y, m);
+  var html = [];
+  var count = 0;
+  for (var b = 0; b < first; b++) html.push('<div class="stamp-day blank"></div>');
+  for (var d = 1; d <= days; d++) {
+    var k = dateKey(y, m, d);
+    var got = !!S.stamps[k];
+    var cls = 'stamp-day';
+    if (got) { cls += ' got'; count++; }
+    if (k === tstr) cls += ' today';
+    if (k > tstr) cls += ' future';
+    html.push('<div class="' + cls + '"><div class="stamp-num">' + d + '</div><div class="stamp-mark">' + (got ? '⭐' : '') + '</div></div>');
+  }
+  grid.innerHTML = html.join('');
+  document.getElementById('stampCount').textContent = count + L('stampCount');
+}
+
+function moveStampMonth(delta) {
+  stampViewM += delta;
+  while (stampViewM < 1)  { stampViewM += 12; stampViewY--; }
+  while (stampViewM > 12) { stampViewM -= 12; stampViewY++; }
+  rStampCard();
+}
+
+function showThisMonth() {
+  stampViewY = tY;
+  stampViewM = tM;
+  rStampCard();
+}
+
+// ============================================================
+// 完了アニメーション
+// ============================================================
+function showFinishAnimation() {
+  var ov = document.getElementById('finishOvl');
+  if (!ov) return;
+  ov.querySelectorAll('.finish-star,.finish-bubble').forEach(function(n) { n.remove(); });
+  var marks = ['⭐','✨','🌟','🎈','💮','👏','🎊'];
+  for (var i = 0; i < 34; i++) {
+    var sp = document.createElement('div');
+    sp.className = 'finish-star';
+    sp.textContent = marks[i % marks.length];
+    sp.style.left = (Math.random() * 100) + 'vw';
+    sp.style.bottom = (-20 - Math.random() * 80) + 'px';
+    sp.style.animationDelay = (Math.random() * .55) + 's';
+    sp.style.animationDuration = (1.8 + Math.random() * 1.2) + 's';
+    sp.style.fontSize = (20 + Math.random() * 24) + 'px';
+    ov.appendChild(sp);
+  }
+  for (var j = 0; j < 26; j++) {
+    var bbl = document.createElement('div');
+    bbl.className = 'finish-bubble';
+    bbl.style.left = (Math.random() * 100) + 'vw';
+    bbl.style.bottom = (-10 - Math.random() * 50) + 'px';
+    bbl.style.animationDelay = (Math.random() * .6) + 's';
+    bbl.style.animationDuration = (1.6 + Math.random() * 1.1) + 's';
+    bbl.style.width = bbl.style.height = (8 + Math.random() * 22) + 'px';
+    ov.appendChild(bbl);
+  }
+  ov.classList.add('show');
+  clearTimeout(window._finishTimer);
+  window._finishTimer = setTimeout(function() { ov.classList.remove('show'); }, 3200);
+}
+
+// ============================================================
+// イベントチェック関連
+// ============================================================
+function getEventKey(i) { return 'ev' + i; }
+
+function getEventDoneKeys(ds) {
+  var arr = S.eventDone[ds] || [];
+  return arr.map(function(v) { return String(v); });
+}
+
+function toggleEvent(key) {
+  // ★ 今日以外は絶対に実行しない
+  if (viewDate !== tstr) return;
+  var wasAllDone = isTodayAllDone();
+  if (!S.eventDone[tstr]) S.eventDone[tstr] = [];
+  var d = getEventDoneKeys(tstr);
+  var pos = d.indexOf(String(key));
+  if (pos >= 0) d.splice(pos, 1);
+  else d.push(String(key));
+  S.eventDone[tstr] = d;
+  syncTodayStamp();
+  saveS();
+  rEvents();
+  rProgress();
+  rStampCard();
+  rRewardBar();
+  var nowAllDone = isTodayAllDone();
+  if (!wasAllDone && nowAllDone) showFinishAnimation();
+}
+
+// イベント表示（チェック対応）
+function rEvents() {
+  var el = document.getElementById('evlist');
+  if (!S.events || !S.events.length) {
+    el.innerHTML = '<div class="emsg">' + esc(L('evlistEmpty')) + '</div>';
+    return;
+  }
+  var isToday = (viewDate === tstr);
+  var evDone  = getEventDoneKeys(viewDate);
+  el.innerHTML = S.events.map(function(ev, i) {
+    var key    = getEventKey(i);
+    var isDone = evDone.indexOf(key) >= 0;
+    if (isToday) {
+      return '<div class="ecard' + (isDone ? ' ecard-done' : '') + '" onclick="toggleEvent(\'' + key + '\')" style="cursor:pointer">'
+        + '<div class="echk' + (isDone ? ' echk-done' : '') + '">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="etime">' + esc(ev.time || L('evAllDay')) + '</div>'
+        + '<div class="ename">' + esc(ev.title) + '</div></div>';
+    } else {
+      return '<div class="ecard' + (isDone ? ' ecard-done' : '') + '">'
+        + '<div class="echk' + (isDone ? ' echk-done' : '') + '">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="etime">' + esc(ev.time || L('evAllDay')) + '</div>'
+        + '<div class="ename">' + esc(ev.title) + '</div></div>';
+    }
+  }).join('');
+}
+
+// ============================================================
+// シール項目関連
+// ============================================================
+
+// 毎日シールキー：旧互換維持のため s0, s1, ...
+function getStickerFixedKey(i) { return 's' + i; }
+// 曜日別シールキー：sd0, sd1, ...
+function getStickerDayKey(i)   { return 'sd' + i; }
+
+// viewDate の曜日に応じた「表示用シール項目リスト」を返す
+// fixedStickerTasks（毎日） + stickerTasks[曜日]（曜日別）を結合
+function getStickerTasksForDate(ds) {
+  var dw  = dowOfDateStr(ds);
+  var list = [];
+  (S.fixedStickerTasks || []).forEach(function(t, i) {
+    list.push({ key: getStickerFixedKey(i), name: t.name, emoji: t.emoji });
+  });
+  var dayArr = (S.stickerTasks && S.stickerTasks[dw]) ? S.stickerTasks[dw] : [];
+  dayArr.forEach(function(t, i) {
+    list.push({ key: getStickerDayKey(i), name: t.name, emoji: t.emoji });
+  });
+  return list;
+}
+
+function getStickerDoneKeys(ds) {
+  var arr = S.stickerDone[ds] || [];
+  return arr.map(function(v) { return String(v); });
+}
+
+function toggleSticker(key) {
+  // ★ 今日以外は絶対に実行しない
+  if (viewDate !== tstr) return;
+  if (!S.stickerDone[tstr]) S.stickerDone[tstr] = [];
+  var d = getStickerDoneKeys(tstr);
+  var pos = d.indexOf(String(key));
+  if (pos >= 0) {
+    d.splice(pos, 1);
+    S.stickerTotal = Math.max(0, (S.stickerTotal || 0) - 1);
+  } else {
+    d.push(String(key));
+    S.stickerTotal = (S.stickerTotal || 0) + 1;
+  }
+  S.stickerDone[tstr] = d;
+  // ★ stickerTotal は stickerDone だけ変更。stamps/syncTodayStamp には影響しない
+  saveS();
+  rStickers();
+  rRewardBar();
+}
+
+// シール項目セクション描画
+function rStickers() {
+  var el = document.getElementById('stklist');
+  if (!el) return;
+  var items  = getStickerTasksForDate(viewDate);
+  var secEl  = document.getElementById('sec-sticker-section');
+  if (!items.length) {
+    el.innerHTML = '';
+    if (secEl) secEl.style.display = 'none';
+    return;
+  }
+  if (secEl) secEl.style.display = '';
+  var isToday = (viewDate === tstr);
+  var stDone  = getStickerDoneKeys(viewDate);
+  el.innerHTML = items.map(function(t) {
+    var isDone = stDone.indexOf(t.key) >= 0;
+    if (isToday) {
+      return '<div class="tcard' + (isDone ? ' done' : '') + '" onclick="toggleSticker(\'' + t.key + '\')">'
+        + '<div class="tcheck">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="temi">' + esc(t.emoji || '🎟️') + '</div>'
+        + '<div class="tname">' + esc(t.name) + '</div>'
+        + '<div style="font-size:11px;color:#FF8C42;font-weight:800;flex-shrink:0">🎟️</div></div>';
+    } else {
+      return '<div class="tcard readonly' + (isDone ? ' done' : '') + '">'
+        + '<div class="tcheck">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="temi">' + esc(t.emoji || '🎟️') + '</div>'
+        + '<div class="tname">' + esc(t.name) + '</div>'
+        + '<div style="font-size:11px;color:#FF8C42;font-weight:800;flex-shrink:0">🎟️</div></div>';
+    }
+  }).join('');
+}
+
+// シール設定ペイン：現在編集中の曜日
+var stickerEditDow = 'fixed';
+
+// シール設定ペインの曜日タブ描画
+function rStickerDayTabs() {
+  var html = '<button class="dtab' + (stickerEditDow === 'fixed' ? ' active' : '') + '" onclick="swStickerDay(\'fixed\')">毎日</button>';
+  html += DS.map(function(d, i) {
+    return '<button class="dtab' + (i === stickerEditDow ? ' active' : '') + '" onclick="swStickerDay(' + i + ')">' + d + '</button>';
+  }).join('');
+  document.getElementById('stk-dtabs').innerHTML = html;
+}
+
+// シール設定ペインのタブ切り替え
+function swStickerDay(d) {
+  collectStickerInputs();
+  stickerEditDow = d;
+  rStickerDayTabs();
+  rStickerArea();
+}
+
+// 現在編集中のシール項目配列を返す
+function stickerTarget() {
+  if (stickerEditDow === 'fixed') {
+    if (!S.fixedStickerTasks) S.fixedStickerTasks = [];
+    return S.fixedStickerTasks;
+  }
+  if (!S.stickerTasks[stickerEditDow]) S.stickerTasks[stickerEditDow] = [];
+  return S.stickerTasks[stickerEditDow];
+}
+
+// シール設定ペインの入力収集（現在のタブのみ）
+function collectStickerInputs() {
+  var rows = document.querySelectorAll('#stkarea .terow');
+  var saved = [];
+  for (var i = 0; i < rows.length; i++) {
+    var n  = (document.getElementById('stn' + i) || {}).value || '';
+    var em = (document.getElementById('ste' + i) || {}).value || '🎟️';
+    saved.push({ name: n.trim(), emoji: em.trim() || '🎟️' });
+  }
+  if (stickerEditDow === 'fixed') S.fixedStickerTasks = saved;
+  else S.stickerTasks[stickerEditDow] = saved;
+}
+
+// シール設定ペインの入力欄描画
+function rStickerArea() {
+  var tasks = stickerTarget();
+  document.getElementById('stkarea').innerHTML = tasks.map(function(t, i) {
+    return '<div class="terow">'
+      + '<input value="' + esc(t.emoji || '🎟️') + '" class="epick" maxlength="2" id="ste' + i + '" placeholder="🎟️"/>'
+      + '<input value="' + esc(t.name  || '')    + '" id="stn' + i + '" placeholder="シールのやること"/>'
+      + '<button class="dbtn" onclick="delStickerRow(' + i + ')">✕</button></div>';
+  }).join('');
+}
+
+function addStickerRow() {
+  collectStickerInputs();
+  stickerTarget().push({ name: '', emoji: '🎟️' });
+  rStickerArea();
+  var els = document.querySelectorAll('#stkarea [id^="stn"]');
+  if (els.length) els[els.length - 1].focus();
+}
+
+function delStickerRow(i) {
+  collectStickerInputs();
+  stickerTarget().splice(i, 1);
+  rStickerArea();
+}
+
+
+// ============================================================
+// iCal パーサー（RRULE対応）
+// ============================================================
+function parseIcal(text) {
+  var joined = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'');
+  var lines = joined.split('\n');
+  var events = [], inEv = false, cur = {};
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    if (line === 'BEGIN:VEVENT') { inEv = true; cur = {}; continue; }
+    if (line === 'END:VEVENT') {
+      if (inEv) { var ev = extractEv(cur); if (ev) events.push(ev); }
+      inEv = false; cur = {}; continue;
+    }
+    if (!inEv) continue;
+    var sep = line.indexOf(':');
+    if (sep < 0) continue;
+    var propFull = line.substring(0, sep);
+    var propVal  = line.substring(sep + 1);
+    var baseName = propFull.split(';')[0].toUpperCase();
+    // ★ EXDATE は複数行・1行複数日に対応するため配列で積む
+    if (baseName === 'EXDATE') {
+      if (!cur['EXDATE']) cur['EXDATE'] = [];
+      cur['EXDATE'].push(propVal);
+    } else {
+      cur[baseName] = propVal;
+    }
+    if (baseName === 'DTSTART') { cur['_DT_RAW'] = propVal; cur['_DT_PROP'] = propFull.toUpperCase(); }
+    if (baseName === 'SUMMARY') { cur['_SUMMARY_RAW'] = propVal; }
+  }
+  events.sort(function(a,b) { return a._sk - b._sk; });
+  return events;
+}
+
+// ============================================================
+// RRULE 繰り返し判定
+// 対応: FREQ=DAILY/WEEKLY/MONTHLY、INTERVAL、BYDAY、BYMONTHDAY、UNTIL、EXDATE
+// 未対応: YEARLY、COUNT、BYSETPOS、BYDAY=2MO（毎月第N曜日）
+// ============================================================
+function rruleMatchesToday(dtStartJST, rruleStr, exdateArr) {
+  // dtStartJST : DTSTARTをUTC midnight扱いにしたDateオブジェクト（getUTC*で読む）
+  if (!rruleStr) return false;
+
+  // ① 今日の情報（起動時に計算済みのグローバル変数を流用）
+  var todayY = tY, todayM = tM, todayD = tD, todayDow = dow;
+
+  // ② DTSTART の日付を取得
+  var stY = dtStartJST.getUTCFullYear();
+  var stM = dtStartJST.getUTCMonth() + 1;
+  var stD = dtStartJST.getUTCDate();
+
+  // DTSTART が今日より未来なら対象外
+  if (stY > todayY) return false;
+  if (stY === todayY && stM > todayM) return false;
+  if (stY === todayY && stM === todayM && stD > todayD) return false;
+
+  // ③ RRULE をパース
+  var params = {};
+  rruleStr.split(';').forEach(function(part) {
+    var kv = part.split('=');
+    if (kv.length === 2) params[kv[0].toUpperCase()] = kv[1].toUpperCase();
+  });
+  var freq       = params['FREQ']       || '';
+  var interval   = parseInt(params['INTERVAL'] || '1', 10);
+  var until      = params['UNTIL']      || null;
+  var byday      = params['BYDAY']      ? params['BYDAY'].split(',') : null;
+  var bymonthday = params['BYMONTHDAY'] ? parseInt(params['BYMONTHDAY'], 10) : null;
+
+  // ④ UNTIL チェック（今日が UNTIL より後なら対象外）
+  if (until) {
+    var ud = until.replace(/\D/g,'').slice(0, 8);
+    var todayFlat8 = '' + todayY + pad(todayM) + pad(todayD);
+    if (todayFlat8 > ud) return false;
+  }
+
+  // ⑤ EXDATE チェック
+  //    ・exdateArr は複数行の配列
+  //    ・各行はカンマ区切りで複数日付を含む場合がある
+  //    例: ["20260610,20260617", "20260624T000000Z"]
+  if (exdateArr && exdateArr.length) {
+    var todayFlat8ex = '' + todayY + pad(todayM) + pad(todayD);
+    for (var ei = 0; ei < exdateArr.length; ei++) {
+      // カンマで分割して各日付を個別にチェック
+      var parts = exdateArr[ei].split(',');
+      for (var pi = 0; pi < parts.length; pi++) {
+        var exd = parts[pi].replace(/\D/g,'').slice(0, 8);
+        if (exd === todayFlat8ex) return false;
+      }
+    }
+  }
+
+  // ⑥ DTSTART から今日までの経過日数
+  var msPerDay = 86400000;
+  var startMs  = Date.UTC(stY, stM - 1, stD);
+  var todayMs  = Date.UTC(todayY, todayM - 1, todayD);
+  var diffDays = Math.round((todayMs - startMs) / msPerDay);
+  if (diffDays < 0) return false;
+
+  // ⑦ FREQ 別の判定
+  if (freq === 'DAILY') {
+    // INTERVAL=N ごとの繰り返し
+    return (diffDays % interval === 0);
+  }
+
+  if (freq === 'WEEKLY') {
+    if (byday) {
+      // FREQ=WEEKLY;BYDAY=MO,WE,FR
+      // 週数が INTERVAL の倍数かつ今日の曜日が BYDAY に含まれる
+      var diffWeeks = Math.floor(diffDays / 7);
+      if (diffWeeks % interval !== 0) return false;
+      var dowKeys = ['SU','MO','TU','WE','TH','FR','SA'];
+      return byday.indexOf(dowKeys[todayDow]) >= 0;
+    } else {
+      // FREQ=WEEKLY : DTSTART と同じ曜日で 7*INTERVAL 日ごと
+      return (diffDays % (7 * interval) === 0);
+    }
+  }
+
+  if (freq === 'MONTHLY') {
+    if (bymonthday !== null) {
+      // FREQ=MONTHLY;BYMONTHDAY=N : 今日の日がNと一致
+      return (todayD === bymonthday);
+    } else {
+      // FREQ=MONTHLY : DTSTART と同じ日付（月をまたいで毎月同日）
+      return (todayD === stD);
+    }
+  }
+
+  // YEARLY / その他 → 未対応
+  return false;
+}
+
+function extractEv(cur) {
+  var sum = (cur['SUMMARY'] || '').trim();
+  sum = sum.replace(/\\n/g,' ').replace(/\\,/g,',').replace(/\\/g,'');
+  if (!sum) return null;
+  var dtRaw  = cur['_DT_RAW']  || '';
+  var dtProp = cur['_DT_PROP'] || '';
+  if (!dtRaw) return null;
+  var digits = dtRaw.replace(/\D/g,'');
+  if (digits.length < 8) return null;
+  var exdates = cur['EXDATE'] || null;
+
+  // ===== 終日予定（8桁）=====
+  if (digits.length === 8) {
+    // DTSTART が今日と一致 → 単発終日予定
+    if (digits === todayFlat) return { title:sum, time:null, _sk:0 };
+    // RRULE 判定（終日繰り返し）
+    if (cur['RRULE']) {
+      var dtStartAllDay = new Date(Date.UTC(
+        +digits.slice(0,4), +digits.slice(4,6)-1, +digits.slice(6,8)
+      ));
+      if (rruleMatchesToday(dtStartAllDay, cur['RRULE'], exdates)) {
+        return { title:sum, time:null, _sk:0 };
+      }
+    }
+    return null;
+  }
+
+  // ===== 時刻あり予定 =====
+  var yr=+digits.slice(0,4), mo=+digits.slice(4,6)-1, dy=+digits.slice(6,8);
+  var hr=+digits.slice(8,10), mn=+digits.slice(10,12);
+  var isUTC = (dtRaw.charAt(dtRaw.length-1) === 'Z');
+  var jstDate;
+  if (isUTC) {
+    jstDate = new Date(Date.UTC(yr,mo,dy,hr,mn,0) + 9*3600*1000);
+  } else {
+    jstDate = new Date(yr, mo, dy, hr, mn, 0);
+  }
+  var jstFlat, timeStr, skVal;
+  if (isUTC) {
+    jstFlat = '' + jstDate.getUTCFullYear() + pad(jstDate.getUTCMonth()+1) + pad(jstDate.getUTCDate());
+    timeStr = pad(jstDate.getUTCHours()) + ':' + pad(jstDate.getUTCMinutes());
+    skVal   = jstDate.getUTCHours()*60 + jstDate.getUTCMinutes();
+  } else {
+    jstFlat = '' + jstDate.getFullYear() + pad(jstDate.getMonth()+1) + pad(jstDate.getDate());
+    timeStr = pad(jstDate.getHours()) + ':' + pad(jstDate.getMinutes());
+    skVal   = jstDate.getHours()*60 + jstDate.getMinutes();
+  }
+
+  // DTSTART が今日と一致 → 単発予定
+  if (jstFlat === todayFlat) {
+    return { title:sum, time:timeStr, _sk:skVal };
+  }
+
+  // RRULE 判定（時刻あり繰り返し）
+  // RRULE の日付判定には日付部分のみを使う（時刻・タイムゾーンは無視）
+  if (cur['RRULE']) {
+    var dtStartForRRule = new Date(Date.UTC(yr, mo, dy));
+    if (rruleMatchesToday(dtStartForRRule, cur['RRULE'], exdates)) {
+      return { title:sum, time:timeStr, _sk:skVal };
+    }
+  }
+
+  return null;
+}
+
+// ============================================================
+// iCal取得（元コードそのまま）
+// ============================================================
+var PROXIES = [
+  function(u) { return 'https://corsproxy.io/?' + encodeURIComponent(u); },
+  function(u) { return 'https://api.allorigins.win/get?url=' + encodeURIComponent(u); },
+  function(u) { return 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u); }
+];
+
+async function fetchIcalData(url, statusEl, btnEl) {
+  if (!url) {
+    if (statusEl) { statusEl.textContent = L('calNoUrl'); statusEl.className = 'smsg err'; }
+    return false;
+  }
+  if (btnEl) btnEl.disabled = true;
+  if (statusEl) { statusEl.textContent = L('calLoadingBase'); statusEl.className = 'smsg inf'; }
+  var icalText = '';
+  try {
+    var r = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    if (r.ok) { var t = await r.text(); if (t.includes('BEGIN:VCALENDAR')) icalText = t; }
+  } catch(e) {}
+  if (!icalText) {
+    for (var i = 0; i < PROXIES.length; i++) {
+      if (statusEl) { statusEl.textContent = L('calLoadingBase') + '(' + (i+1) + '/' + PROXIES.length + ')'; statusEl.className = 'smsg inf'; }
+      try {
+        var res = await fetch(PROXIES[i](url), { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) continue;
+        var txt = await res.text();
+        if (txt.includes('"contents"')) { try { txt = JSON.parse(txt).contents; } catch(e) {} }
+        if (txt && txt.includes('BEGIN:VCALENDAR')) { icalText = txt; break; }
+      } catch(e) {}
+    }
+  }
+  if (btnEl) btnEl.disabled = false;
+  if (!icalText) {
+    if (statusEl) { statusEl.textContent = L('calError'); statusEl.className = 'smsg err'; }
+    return false;
+  }
+  var evs = parseIcal(icalText);
+  S.events = evs;
+  saveS();
+  if (statusEl) {
+    statusEl.textContent = evs.length
+      ? L('calSuccessPre') + evs.length + L('calSuccessSuf')
+      : L('calSuccessEmpty');
+    statusEl.className = 'smsg ok';
+  }
+  rEvents();
+  return true;
+}
+
+async function autoFetch() {
+  if (!S.icalUrl) return;
+  var rb = document.getElementById('rbtn');
+  rb.textContent = L('refreshLoading');
+  await fetchIcalData(S.icalUrl, null, null);
+  rb.textContent = L('refreshBtn');
+}
+
+async function fetchFromSettings() {
+  var url = document.getElementById('ical-url').value.trim();
+  S.icalUrl = url;
+  saveS();
+  await fetchIcalData(url, document.getElementById('calmsg'), document.getElementById('fetch-btn'));
+}
+
+// ============================================================
+// 設定UI
+// ============================================================
+function switchTab(t) {
+  var taskPane   = document.getElementById('pane-tasks');
+  var stickerPane = document.getElementById('pane-sticker');
+  if (taskPane   && taskPane.style.display   !== 'none') collectTaskInputs();
+  if (stickerPane && stickerPane.style.display !== 'none') collectStickerInputs();
+
+  ['cal','tasks','sticker','gen','reward','display'].forEach(function(n) {
+    document.getElementById('pane-' + n).style.display = n === t ? 'block' : 'none';
+    document.getElementById('tb-' + n).classList.toggle('active', n === t);
+  });
+  if (t === 'tasks')   { rDayTabs(); rTaskArea(); }
+  if (t === 'sticker') { stickerEditDow = 'fixed'; rStickerDayTabs(); rStickerArea(); }
+  if (t === 'reward')  { rRewardSettingInfo(); }
+  if (t === 'display') { rDisplayPane(); }
+}
+
+// HTML直書き固定文言をまとめてL()で更新する
+// （各描画関数とは別に、ページ全体の静的要素を一括で切り替える）
+function rStaticLabels() {
+  function setText(id, txt) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = txt;
+  }
+  function setHTML(id, html) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+  // セクションタイトル
+  setText('sec-schedule',     L('secSchedule'));
+  setText('sec-tasks',        L('secTasks'));
+  setText('sec-stamp',        L('secStamp'));
+  // ご褒美タイトル
+  setText('reward-title-lbl', L('rewardTitle'));
+  // スタンプナビ
+  setText('stamp-prev-btn',   L('stampPrevMonth'));
+  setText('stamp-this-btn',   L('stampThisMonth'));
+  setText('stamp-next-btn',   L('stampNextMonth'));
+  // 完了カード
+  setText('finish-title-lbl', L('finishTitle'));
+  setText('finish-sub-lbl',   L('finishSub'));
+  // confetti
+  setText('confetti',         L('confettiMsg'));
+  // 更新ボタン（ローディング中でなければ）
+  var rb = document.getElementById('rbtn');
+  if (rb && rb.textContent !== L('refreshLoading')) rb.textContent = L('refreshBtn');
+  // 設定パネル
+  setText('setting-title-lbl',     L('settingTitle'));
+  setText('tb-cal',                 L('tabCal'));
+  setText('tb-tasks',               L('tabTasks'));
+  setText('tb-sticker',             L('tabSticker'));
+  setText('tb-gen',                 L('tabName'));
+  setText('tb-reward',              L('tabReward'));
+  setText('tb-display',             L('tabDisplay'));
+  setText('save-btn-lbl',           L('saveBtn'));
+  setText('reset-btn-lbl',          L('resetBtn'));
+  setText('close-btn-lbl',          L('closeBtn'));
+  // カレンダーペイン
+  setText('cal-label-lbl',          L('calLabel'));
+  var calHintEl = document.getElementById('cal-hint-lbl');
+  if (calHintEl) {
+    var lines = L('calHint').split('\n');
+    calHintEl.innerHTML = lines.map(function(l){return esc(l);}).join('<br>');
+  }
+  setText('fetch-btn',              L('calFetchBtn'));
+  // やることペイン
+  setText('tasks-pane-hint',        L('tasksPaneHint'));
+  setText('tasks-add-btn',          L('tasksAddBtn'));
+  // なまえペイン
+  setText('name-label-lbl',         L('nameLabel'));
+  // ご褒美設定ペイン
+  setText('reward-goal-label-lbl',  L('rewardGoalLabel'));
+  setText('reward-text-label-lbl',  L('rewardTextLabel'));
+  setText('reward-ext-label-lbl',   L('rewardExtLabel'));
+  setText('reward-ext-hint-lbl',    L('rewardExtHint'));
+  // evlistが「設定から〜」メッセージを表示中なら更新
+  var evlist = document.getElementById('evlist');
+  if (evlist && evlist.querySelector('.emsg')) {
+    evlist.innerHTML = '<div class="emsg">' + esc(L('evlistEmpty')) + '</div>';
+  }
+}
+
+function openSettings() {
+  document.getElementById('cname').value     = S.childName || '';
+  document.getElementById('ical-url').value  = S.icalUrl   || '';
+  document.getElementById('calmsg').textContent = '';
+  // ★ ご褒美設定の初期値
+  document.getElementById('rewardGoalInput').value     = S.rewardGoal     || 100;
+  document.getElementById('rewardTextInput').value     = S.rewardText     || '';
+  document.getElementById('externalStampsInput').value = S.externalStamps || 0;
+  editDow = dowOfDateStr(tstr);
+  switchTab('cal');
+  document.getElementById('ovl').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('ovl').classList.remove('show');
+  document.getElementById('pane-tasks').style.display   = 'none';
+  document.getElementById('pane-sticker').style.display = 'none';
+  document.getElementById('tkarea').innerHTML  = '';
+  document.getElementById('stkarea').innerHTML = '';
+}
+
+function ovlClick(e) {
+  if (e.target === document.getElementById('ovl')) closeSettings();
+}
+
+// ご褒美ペインの現在値表示
+function rRewardSettingInfo() {
+  var el = document.getElementById('rewardCurrentInfo');
+  if (!el) return;
+  var app = countAppStamps();
+  var ext = S.externalStamps || 0;
+  el.innerHTML =
+    L('rewardInfoTitle') + '<br>' +
+    L('rewardInfoApp') + app + L('rewardUnit') + '<br>' +
+    L('rewardInfoExt') + ext + L('rewardUnit') + '<br>' +
+    L('rewardInfoTotal') + (app + ext) + L('rewardUnit');
+}
+
+// もじ設定ペインの描画
+function rDisplayPane() {
+  var el = document.getElementById('pane-display');
+  if (!el) return;
+  var cur = S.labelMode || 'easy';
+  el.innerHTML =
+    '<div class="fg">' +
+    '<label class="fl">' + LABELS.easy.displayTitle + ' / ' + LABELS.normal.displayTitle + '</label>' +
+    '<div class="display-opts">' +
+    '<label class="display-opt' + (cur === 'easy' ? ' active' : '') + '">' +
+    '<input type="radio" name="labelMode" value="easy"' + (cur === 'easy' ? ' checked' : '') + '> ' +
+    LABELS.easy.displayEasy + '</label>' +
+    '<label class="display-opt' + (cur === 'normal' ? ' active' : '') + '">' +
+    '<input type="radio" name="labelMode" value="normal"' + (cur === 'normal' ? ' checked' : '') + '> ' +
+    LABELS.normal.displayNormal + '</label>' +
+    '</div>' +
+    '<div class="hint" style="margin-top:10px">' + L('displaySaveNote') + '</div>' +
+    '</div>';
+  // ラジオ変更でラベルをtoggle
+  el.querySelectorAll('input[name="labelMode"]').forEach(function(r) {
+    r.addEventListener('change', function() {
+      el.querySelectorAll('.display-opt').forEach(function(lbl) {
+        lbl.classList.toggle('active', lbl.querySelector('input').value === r.value);
+      });
+    });
+  });
+}
+
+// ±ボタンで数値を増減
+function adjustNum(id, delta) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var v = parseInt(el.value, 10) || 0;
+  v += delta;
+  if (v < 0) v = 0;
+  el.value = v;
+  // ご褒美ペインの現在値も更新
+  rRewardSettingInfo();
+}
+
+// 設定保存
+function saveSettings() {
+  // ★ 既存フィールドの保存処理を維持
+  S.childName = document.getElementById('cname').value.trim();
+  S.icalUrl   = document.getElementById('ical-url').value.trim();
+
+  // tasksタブが開いていた場合のみ収集
+  if (document.getElementById('pane-tasks').style.display !== 'none') {
+    collectTaskInputs();
+    if (editDow === 'fixed') {
+      S.fixedTasks = (S.fixedTasks || []).filter(function(t) { return t.name; });
+    } else {
+      S.tasks[editDow] = (S.tasks[editDow] || []).filter(function(t) { return t.name; });
+    }
+  }
+
+  // ★ stickerタブが開いていた場合のみ収集
+  if (document.getElementById('pane-sticker').style.display !== 'none') {
+    collectStickerInputs();
+    // 空のエントリを除去（固定・現在の曜日タブのみ）
+    S.fixedStickerTasks = (S.fixedStickerTasks || []).filter(function(t) { return t.name; });
+    if (stickerEditDow !== 'fixed' && S.stickerTasks[stickerEditDow]) {
+      S.stickerTasks[stickerEditDow] = S.stickerTasks[stickerEditDow].filter(function(t) { return t.name; });
+    }
+  }
+
+  // ★ ご褒美設定の追加保存（既存フィールドに影響なし）
+  var rg = parseInt(document.getElementById('rewardGoalInput').value, 10);
+  if (!isNaN(rg) && rg > 0) S.rewardGoal = rg;
+  S.rewardText     = document.getElementById('rewardTextInput').value.trim();
+  var ext = parseInt(document.getElementById('externalStampsInput').value, 10);
+  S.externalStamps = (!isNaN(ext) && ext >= 0) ? ext : 0;
+
+  // ★ labelModeの保存
+  var modeRadio = document.querySelector('input[name="labelMode"]:checked');
+  if (modeRadio) S.labelMode = modeRadio.value;
+
+  syncTodayStamp();
+  saveS();
+  closeSettings();
+  rStaticLabels();
+  rDateNav();
+  rHeader();
+  rEvents();
+  rTasks();
+  rStickers();
+  rProgress();
+  rStampCard();
+  rRewardBar();
+}
+
+function resetDay() {
+  if (confirm(L('resetConfirm'))) {
+    // ★ 今日チェック済みのシール数だけ stickerTotal を減算してからリセット
+    var todayStickerCount = (S.stickerDone && S.stickerDone[tstr])
+      ? S.stickerDone[tstr].length : 0;
+    S.stickerTotal = Math.max(0, (S.stickerTotal || 0) - todayStickerCount);
+
+    S.done[tstr]        = [];
+    S.eventDone[tstr]   = [];
+    S.stickerDone[tstr] = [];
+    // stamps の今日分だけ削除
+    if (S.stamps && S.stamps[tstr]) delete S.stamps[tstr];
+    saveS();
+    rEvents();
+    rTasks();
+    rStickers();
+    rProgress();
+    rStampCard();
+    rRewardBar();
+    closeSettings();
+  }
+}
+
+// ============================================================
+// タスク設定UI（元コードそのまま）
+// ============================================================
+function taskTarget() {
+  if (editDow === 'fixed') return S.fixedTasks || (S.fixedTasks = []);
+  if (!S.tasks[editDow]) S.tasks[editDow] = [];
+  return S.tasks[editDow];
+}
+
+function collectTaskInputs() {
+  var rows = document.querySelectorAll('#tkarea .terow'), saved = [];
+  for (var i = 0; i < rows.length; i++) {
+    var n  = (document.getElementById('tn' + i) || {}).value || '';
+    var em = (document.getElementById('te' + i) || {}).value || '📝';
+    saved.push({ name: n.trim(), emoji: em.trim() || '📝' });
+  }
+  if (editDow === 'fixed') S.fixedTasks = saved;
+  else S.tasks[editDow] = saved;
+}
+
+function rDayTabs() {
+  var html = '<button class="dtab' + (editDow === 'fixed' ? ' active' : '') + '" onclick="swDay(\'fixed\')">毎日</button>';
+  html += DS.map(function(d, i) {
+    return '<button class="dtab' + (i === editDow ? ' active' : '') + '" onclick="swDay(' + i + ')">' + d + '</button>';
+  }).join('');
+  document.getElementById('dtabs').innerHTML = html;
+}
+
+function swDay(d) { collectTaskInputs(); editDow = d; rDayTabs(); rTaskArea(); }
+
+function rTaskArea() {
+  var tasks = taskTarget();
+  document.getElementById('tkarea').innerHTML = tasks.map(function(t, i) {
+    return '<div class="terow">'
+      + '<input value="' + esc(t.emoji || '') + '" class="epick" maxlength="2" id="te' + i + '" placeholder="😀"/>'
+      + '<input value="' + esc(t.name  || '') + '" id="tn' + i + '" placeholder="やること"/>'
+      + '<button class="dbtn" onclick="delRow(' + i + ')">✕</button></div>';
+  }).join('');
+}
+
+function addRow() {
+  collectTaskInputs();
+  taskTarget().push({ name: '', emoji: '📝' });
+  rTaskArea();
+  var els = document.querySelectorAll('#tkarea [id^="tn"]');
+  if (els.length) els[els.length-1].focus();
+}
+
+function delRow(i) { collectTaskInputs(); taskTarget().splice(i, 1); rTaskArea(); }
+
+// ============================================================
+// 起動処理
+// ============================================================
+loadS();
+syncTodayStamp();
+// ★ saveS() は呼ばない → 起動しただけではlocalStorageに書き込まない
+//    保存が必要な操作（チェック・設定保存・iCal取得）の中でsaveS()を呼ぶ
+viewDate = tstr;  // 起動時は今日表示
+rStaticLabels();
+rDateNav();
+rHeader();
+rEvents();
+rTasks();
+rStickers();
+rProgress();
+rStampCard();
+rRewardBar();
+if (S.icalUrl) autoFetch();
+</script>
+</body>
+</html>
