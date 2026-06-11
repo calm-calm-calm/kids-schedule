@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>きょうのよていとやること [TEST]</title>
+<title>きょうのよていとやること</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -35,10 +35,6 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
 .rbtn:hover{background:#FFE8C8}
 .section{margin:16px 14px 0}
 .stitle{font-size:17px;font-weight:800;color:#E07A1F;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.ecard{background:#fff;border-radius:16px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(255,140,66,.1)}
-.etime{font-size:13px;font-weight:700;color:#FF8C42;min-width:52px;text-align:center;background:#FFF0E0;border-radius:8px;padding:4px 6px}
-.eico{font-size:26px;min-width:32px;text-align:center}
-.ename{font-size:15px;font-weight:700;color:#333;flex:1}
 .tcard{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;border:2.5px solid #F0E4D0;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:all .2s;user-select:none}
 .tcard:hover{border-color:#FF8C42;transform:translateY(-2px)}
 .tcard.done{background:#F0FAF0;border-color:#7CC47C;opacity:.85}
@@ -144,8 +140,16 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
 .display-opt.active{border-color:#FF8C42;background:#FFF9F0;color:#E07A1F}
 .display-opt:hover{border-color:#FFB347}
 
-/* ===== テストバッジ ===== */
-.test-badge{position:fixed;top:8px;left:8px;background:#E05050;color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px;z-index:999;font-family:'Nunito',sans-serif}
+/* ===== イベントカードのチェック ===== */
+.ecard{background:#fff;border-radius:16px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(255,140,66,.1);transition:all .2s}
+.ecard-done{background:#F0FAF0;border:2px solid #7CC47C;opacity:.85}
+.echk{width:28px;height:28px;border-radius:50%;border:3px solid #DDCBB0;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:#fff}
+.echk-done{background:#7CC47C;border-color:#7CC47C;color:#fff}
+.etime{font-size:13px;font-weight:700;color:#FF8C42;min-width:52px;text-align:center;background:#FFF0E0;border-radius:8px;padding:4px 6px}
+.ename{font-size:15px;font-weight:700;color:#333;flex:1}
+
+/* ===== シールセクション非表示（項目なし時） ===== */
+#sec-sticker-section:empty{display:none}
 
 /* ===== 完了アニメーション ===== */
 .finish-ovl{display:none;position:fixed;inset:0;z-index:300;background:radial-gradient(circle at center,rgba(255,255,255,.97),rgba(255,232,200,.94));align-items:center;justify-content:center;overflow:hidden;pointer-events:none}
@@ -184,7 +188,6 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
 </head>
 <body>
 
-
 <div class="header" id="mainHeader">
   <button class="sbtn" onclick="openSettings()">⚙️</button>
   <div style="font-size:36px;margin-bottom:4px" id="hemi">☀️</div>
@@ -216,6 +219,11 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
   <div class="stitle" id="sec-tasks">✅ やること リスト</div>
   <div class="past-banner" id="pastBanner">📅 これは むかしの きろくです。へんこうは できません。</div>
   <div id="tklist"></div>
+</div>
+
+<div class="section" id="sec-sticker-section">
+  <div class="stitle" id="sec-sticker">🎟️ シールの やること</div>
+  <div id="stklist"></div>
 </div>
 
 <div class="section">
@@ -265,6 +273,7 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
     <div class="tabrow">
       <button class="tbtn active" id="tb-cal" onclick="switchTab('cal')">📅 カレンダー</button>
       <button class="tbtn" id="tb-tasks" onclick="switchTab('tasks')">✅ やること</button>
+      <button class="tbtn" id="tb-sticker" onclick="switchTab('sticker')">🎟️ シール</button>
       <button class="tbtn" id="tb-gen" onclick="switchTab('gen')">👧 なまえ</button>
       <button class="tbtn" id="tb-reward" onclick="switchTab('reward')">🎁 ごほうび</button>
       <button class="tbtn" id="tb-display" onclick="switchTab('display')">🔤 もじ</button>
@@ -287,6 +296,14 @@ body{font-family:'Nunito',sans-serif;background:#FFF9F0;padding-bottom:40px;min-
       <div class="dtabs" id="dtabs"></div>
       <div id="tkarea" style="margin-bottom:12px"></div>
       <button class="atbtn" id="tasks-add-btn" onclick="addRow()">＋ やることを ついか</button>
+    </div>
+
+    <!-- シールペイン -->
+    <div id="pane-sticker" style="display:none">
+      <label class="fl" style="margin-bottom:10px">「毎日」または ようびを えらんで シールやることを いれてね</label>
+      <div class="dtabs" id="stk-dtabs"></div>
+      <div id="stkarea" style="margin-bottom:12px"></div>
+      <button class="atbtn" onclick="addStickerRow()">＋ シールやることを ついか</button>
     </div>
 
     <!-- なまえペイン -->
@@ -344,7 +361,7 @@ var DS=['日','月','火','水','木','金','土'];
 var MN=['1','2','3','4','5','6','7','8','9','10','11','12'];
 var EI=['🏫','⚽','🎹','🏊','📖','🎮','🍱','🎨','🌸','🚌','🎯','🎪'];
 
-// ★ テスト用ストレージキー（本番 kpv6 は絶対に使わない）
+// ★ ストレージキー
 var STORE_KEY = 'kpv6';
 
 // 今日の日付をJST基準で取得
@@ -433,6 +450,9 @@ var LABELS = {
     tabName:          '👧 なまえ',
     tabReward:        '🎁 ごほうび',
     tabDisplay:       '🔤 もじ',
+    tabSticker:       '🎟️ シール',
+    secSticker:       '🎟️ シールの やること',
+    stickerEmpty:     '',
     saveBtn:          '💾 ほぞんする',
     resetBtn:         'きょうの チェックを リセット',
     resetConfirm:     'きょうの チェックを ぜんぶ リセット する？',
@@ -514,6 +534,9 @@ var LABELS = {
     tabName:          '👧 名前',
     tabReward:        '🎁 ご褒美',
     tabDisplay:       '🔤 文字',
+    tabSticker:       '🎟️ シール',
+    secSticker:       '🎟️ シールのやること',
+    stickerEmpty:     '',
     saveBtn:          '💾 保存する',
     resetBtn:         '今日のチェックをリセット',
     resetConfirm:     '今日のチェックを全部リセットしますか？',
@@ -561,8 +584,13 @@ var S = {
   rewardGoal: 100,
   rewardText: '',
   externalStamps: 0,
-  // ★ 追加：文言モード（既存データになければ "easy" がデフォルト）
-  labelMode: 'easy'
+  labelMode: 'easy',
+  // ★ 復活フィールド
+  eventDone:         {},   // 日付別イベントチェック
+  fixedStickerTasks: [],   // 毎日のシール項目 [{name, emoji}, ...]
+  stickerTasks:      {0:[],1:[],2:[],3:[],4:[],5:[],6:[]}, // 曜日別シール項目
+  stickerDone:       {},   // 日付別シールチェック
+  stickerTotal:      0     // 累計シール獲得数
 };
 
 // ============================================================
@@ -640,8 +668,23 @@ function loadS() {
       if (p.rewardGoal     !== undefined) S.rewardGoal     = p.rewardGoal;
       if (p.rewardText     !== undefined) S.rewardText     = p.rewardText;
       if (p.externalStamps !== undefined) S.externalStamps = p.externalStamps;
-      // ★ labelMode：存在する場合のみ上書き（なければ "easy" を維持）
-      if (p.labelMode !== undefined) S.labelMode = p.labelMode;
+      if (p.labelMode      !== undefined) S.labelMode      = p.labelMode;
+      // ★ 復活フィールド：存在する場合のみ上書き
+      if (p.eventDone    !== undefined) S.eventDone    = p.eventDone;
+      // ★ stickerTasks: 旧形式（配列）→ fixedStickerTasks として引き継ぎ
+      if (p.stickerTasks !== undefined) {
+        if (Array.isArray(p.stickerTasks)) {
+          // 旧データ（配列）→ fixedStickerTasks に移行（メモリ上のみ。saveS()しない）
+          S.fixedStickerTasks = p.stickerTasks;
+          S.stickerTasks = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+        } else {
+          // 新形式（オブジェクト）→ そのまま読み込む
+          S.stickerTasks = p.stickerTasks;
+        }
+      }
+      if (p.fixedStickerTasks !== undefined) S.fixedStickerTasks = p.fixedStickerTasks;
+      if (p.stickerDone  !== undefined) S.stickerDone  = p.stickerDone;
+      if (p.stickerTotal !== undefined) S.stickerTotal = p.stickerTotal;
     }
   } catch(e) {
     // 読み込み失敗時はデフォルト値のまま（絶対に上書き保存しない）
@@ -651,13 +694,14 @@ function loadS() {
   // （旧: Object.keys(S.done).forEach(...) は廃止）
 
   // done[tstr] が未定義なら空配列を初期化（今日分のみ）
-  if (!S.done[tstr]) S.done[tstr] = [];
+  if (!S.done[tstr])       S.done[tstr]       = [];
+  if (!S.eventDone[tstr]) S.eventDone[tstr] = [];
+  if (!S.stickerDone[tstr]) S.stickerDone[tstr] = [];
   if (!S.stamps) S.stamps = {};
 }
 
 function saveS() {
   // ★ localStorage.clear() / removeItem() 禁止
-  // ★ STORE_KEY = 'kpv6_test' のみ書き込む
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(S));
   } catch(e) {}
@@ -687,9 +731,10 @@ function setViewDate(ds) {
   viewDate = ds;
   rDateNav();
   rHeader();
+  rEvents();
   rTasks();
+  rStickers();
   rProgress();
-  // スタンプカードは今日の月に合わせる（ナビで別途移動可）
 }
 
 // 日付ナビゲーションバーの描画
@@ -796,21 +841,25 @@ function rTasks() {
 // 進捗バー描画（改修1：viewDate対応）
 // ============================================================
 function rProgress() {
+  var isToday = (viewDate === tstr);
+  // タスク
   var tasks = getTasksForDate(viewDate);
-  var done = getDoneKeysForDate(viewDate);
-  var dn = 0;
+  var done  = getDoneKeysForDate(viewDate);
+  var dn = 0, tot = tasks.length;
   tasks.forEach(function(t) { if (done.indexOf(t.key) >= 0) dn++; });
-  var tot = tasks.length;
+  // イベント（シール項目は含めない）
+  var evs    = (S.events || []);
+  var evDone = S.eventDone[viewDate] || [];
+  tot += evs.length;
+  evs.forEach(function(ev, i) { if (evDone.indexOf(getEventKey(i)) >= 0) dn++; });
+
   var pct = tot ? Math.round(dn / tot * 100) : 0;
   document.getElementById('pbar').style.width = pct + '%';
   document.getElementById('ptxt').textContent = dn + ' / ' + tot + ' ' + L('progressTxt');
 
-  // confetti は今日のみ
-  var isToday = (viewDate === tstr);
   var c = document.getElementById('confetti');
   if (isToday && tot > 0 && dn >= tot) c.classList.add('show');
   else c.classList.remove('show');
-  // ★ 過去日表示中は saveS / syncTodayStamp を呼ばない
 }
 
 // ============================================================
@@ -833,20 +882,30 @@ function toggleTask(key) {
   syncTodayStamp();
   saveS();
   rTasks();
+  rEvents();
+  rStickers();
   rProgress();
   rStampCard();
   rRewardBar();
   if (!wasAllDone && nowAllDone) showFinishAnimation();
 }
 
-// 今日の全タスクが完了しているか（今日のデータのみ参照）
+// 今日の全項目（タスク＋イベント）が完了しているか（シール項目は含めない）
 function isTodayAllDone() {
   var tasks = getTasksForDate(tstr);
-  var done = getDoneKeysForDate(tstr);
-  if (!tasks.length) return false;
+  var done  = getDoneKeysForDate(tstr);
+  // タスクチェック
   for (var i = 0; i < tasks.length; i++) {
     if (done.indexOf(tasks[i].key) < 0) return false;
   }
+  // イベントチェック
+  var evs    = (S.events || []);
+  var evDone = S.eventDone[tstr] || [];
+  for (var j = 0; j < evs.length; j++) {
+    if (evDone.indexOf(getEventKey(j)) < 0) return false;
+  }
+  // タスクもイベントも0件なら未完了
+  if (!tasks.length && !evs.length) return false;
   return true;
 }
 
@@ -864,9 +923,9 @@ function syncTodayStamp() {
 // ご褒美バー関連（改修2・3）
 // ============================================================
 
-// アプリ内のシール数を stamps から集計
+// アプリ内シール数 = stickerTotal（stamps とは別管理）
 function countAppStamps() {
-  return Object.keys(S.stamps || {}).length;
+  return S.stickerTotal || 0;
 }
 
 // 合計シール数（アプリ内 + 外部）を計算
@@ -988,21 +1047,210 @@ function showFinishAnimation() {
 }
 
 // ============================================================
-// イベント表示
+// イベントチェック関連
 // ============================================================
+function getEventKey(i) { return 'ev' + i; }
+
+function getEventDoneKeys(ds) {
+  var arr = S.eventDone[ds] || [];
+  return arr.map(function(v) { return String(v); });
+}
+
+function toggleEvent(key) {
+  // ★ 今日以外は絶対に実行しない
+  if (viewDate !== tstr) return;
+  var wasAllDone = isTodayAllDone();
+  if (!S.eventDone[tstr]) S.eventDone[tstr] = [];
+  var d = getEventDoneKeys(tstr);
+  var pos = d.indexOf(String(key));
+  if (pos >= 0) d.splice(pos, 1);
+  else d.push(String(key));
+  S.eventDone[tstr] = d;
+  syncTodayStamp();
+  saveS();
+  rEvents();
+  rProgress();
+  rStampCard();
+  rRewardBar();
+  var nowAllDone = isTodayAllDone();
+  if (!wasAllDone && nowAllDone) showFinishAnimation();
+}
+
+// イベント表示（チェック対応）
 function rEvents() {
   var el = document.getElementById('evlist');
   if (!S.events || !S.events.length) {
     el.innerHTML = '<div class="emsg">' + esc(L('evlistEmpty')) + '</div>';
     return;
   }
+  var isToday = (viewDate === tstr);
+  var evDone  = getEventDoneKeys(viewDate);
   el.innerHTML = S.events.map(function(ev, i) {
-    return '<div class="ecard">'
-      + '<div class="etime">' + (ev.time || L('evAllDay')) + '</div>'
-      + '<div class="eico">' + EI[i % EI.length] + '</div>'
-      + '<div class="ename">' + esc(ev.title) + '</div></div>';
+    var key    = getEventKey(i);
+    var isDone = evDone.indexOf(key) >= 0;
+    if (isToday) {
+      return '<div class="ecard' + (isDone ? ' ecard-done' : '') + '" onclick="toggleEvent(\'' + key + '\')" style="cursor:pointer">'
+        + '<div class="echk' + (isDone ? ' echk-done' : '') + '">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="etime">' + esc(ev.time || L('evAllDay')) + '</div>'
+        + '<div class="ename">' + esc(ev.title) + '</div></div>';
+    } else {
+      return '<div class="ecard' + (isDone ? ' ecard-done' : '') + '">'
+        + '<div class="echk' + (isDone ? ' echk-done' : '') + '">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="etime">' + esc(ev.time || L('evAllDay')) + '</div>'
+        + '<div class="ename">' + esc(ev.title) + '</div></div>';
+    }
   }).join('');
 }
+
+// ============================================================
+// シール項目関連
+// ============================================================
+
+// 毎日シールキー：旧互換維持のため s0, s1, ...
+function getStickerFixedKey(i) { return 's' + i; }
+// 曜日別シールキー：sd0, sd1, ...
+function getStickerDayKey(i)   { return 'sd' + i; }
+
+// viewDate の曜日に応じた「表示用シール項目リスト」を返す
+// fixedStickerTasks（毎日） + stickerTasks[曜日]（曜日別）を結合
+function getStickerTasksForDate(ds) {
+  var dw  = dowOfDateStr(ds);
+  var list = [];
+  (S.fixedStickerTasks || []).forEach(function(t, i) {
+    list.push({ key: getStickerFixedKey(i), name: t.name, emoji: t.emoji });
+  });
+  var dayArr = (S.stickerTasks && S.stickerTasks[dw]) ? S.stickerTasks[dw] : [];
+  dayArr.forEach(function(t, i) {
+    list.push({ key: getStickerDayKey(i), name: t.name, emoji: t.emoji });
+  });
+  return list;
+}
+
+function getStickerDoneKeys(ds) {
+  var arr = S.stickerDone[ds] || [];
+  return arr.map(function(v) { return String(v); });
+}
+
+function toggleSticker(key) {
+  // ★ 今日以外は絶対に実行しない
+  if (viewDate !== tstr) return;
+  if (!S.stickerDone[tstr]) S.stickerDone[tstr] = [];
+  var d = getStickerDoneKeys(tstr);
+  var pos = d.indexOf(String(key));
+  if (pos >= 0) {
+    d.splice(pos, 1);
+    S.stickerTotal = Math.max(0, (S.stickerTotal || 0) - 1);
+  } else {
+    d.push(String(key));
+    S.stickerTotal = (S.stickerTotal || 0) + 1;
+  }
+  S.stickerDone[tstr] = d;
+  // ★ stickerTotal は stickerDone だけ変更。stamps/syncTodayStamp には影響しない
+  saveS();
+  rStickers();
+  rRewardBar();
+}
+
+// シール項目セクション描画
+function rStickers() {
+  var el = document.getElementById('stklist');
+  if (!el) return;
+  var items  = getStickerTasksForDate(viewDate);
+  var secEl  = document.getElementById('sec-sticker-section');
+  if (!items.length) {
+    el.innerHTML = '';
+    if (secEl) secEl.style.display = 'none';
+    return;
+  }
+  if (secEl) secEl.style.display = '';
+  var isToday = (viewDate === tstr);
+  var stDone  = getStickerDoneKeys(viewDate);
+  el.innerHTML = items.map(function(t) {
+    var isDone = stDone.indexOf(t.key) >= 0;
+    if (isToday) {
+      return '<div class="tcard' + (isDone ? ' done' : '') + '" onclick="toggleSticker(\'' + t.key + '\')">'
+        + '<div class="tcheck">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="temi">' + esc(t.emoji || '🎟️') + '</div>'
+        + '<div class="tname">' + esc(t.name) + '</div>'
+        + '<div style="font-size:11px;color:#FF8C42;font-weight:800;flex-shrink:0">🎟️</div></div>';
+    } else {
+      return '<div class="tcard readonly' + (isDone ? ' done' : '') + '">'
+        + '<div class="tcheck">' + (isDone ? '✓' : '') + '</div>'
+        + '<div class="temi">' + esc(t.emoji || '🎟️') + '</div>'
+        + '<div class="tname">' + esc(t.name) + '</div>'
+        + '<div style="font-size:11px;color:#FF8C42;font-weight:800;flex-shrink:0">🎟️</div></div>';
+    }
+  }).join('');
+}
+
+// シール設定ペイン：現在編集中の曜日
+var stickerEditDow = 'fixed';
+
+// シール設定ペインの曜日タブ描画
+function rStickerDayTabs() {
+  var html = '<button class="dtab' + (stickerEditDow === 'fixed' ? ' active' : '') + '" onclick="swStickerDay(\'fixed\')">毎日</button>';
+  html += DS.map(function(d, i) {
+    return '<button class="dtab' + (i === stickerEditDow ? ' active' : '') + '" onclick="swStickerDay(' + i + ')">' + d + '</button>';
+  }).join('');
+  document.getElementById('stk-dtabs').innerHTML = html;
+}
+
+// シール設定ペインのタブ切り替え
+function swStickerDay(d) {
+  collectStickerInputs();
+  stickerEditDow = d;
+  rStickerDayTabs();
+  rStickerArea();
+}
+
+// 現在編集中のシール項目配列を返す
+function stickerTarget() {
+  if (stickerEditDow === 'fixed') {
+    if (!S.fixedStickerTasks) S.fixedStickerTasks = [];
+    return S.fixedStickerTasks;
+  }
+  if (!S.stickerTasks[stickerEditDow]) S.stickerTasks[stickerEditDow] = [];
+  return S.stickerTasks[stickerEditDow];
+}
+
+// シール設定ペインの入力収集（現在のタブのみ）
+function collectStickerInputs() {
+  var rows = document.querySelectorAll('#stkarea .terow');
+  var saved = [];
+  for (var i = 0; i < rows.length; i++) {
+    var n  = (document.getElementById('stn' + i) || {}).value || '';
+    var em = (document.getElementById('ste' + i) || {}).value || '🎟️';
+    saved.push({ name: n.trim(), emoji: em.trim() || '🎟️' });
+  }
+  if (stickerEditDow === 'fixed') S.fixedStickerTasks = saved;
+  else S.stickerTasks[stickerEditDow] = saved;
+}
+
+// シール設定ペインの入力欄描画
+function rStickerArea() {
+  var tasks = stickerTarget();
+  document.getElementById('stkarea').innerHTML = tasks.map(function(t, i) {
+    return '<div class="terow">'
+      + '<input value="' + esc(t.emoji || '🎟️') + '" class="epick" maxlength="2" id="ste' + i + '" placeholder="🎟️"/>'
+      + '<input value="' + esc(t.name  || '')    + '" id="stn' + i + '" placeholder="シールのやること"/>'
+      + '<button class="dbtn" onclick="delStickerRow(' + i + ')">✕</button></div>';
+  }).join('');
+}
+
+function addStickerRow() {
+  collectStickerInputs();
+  stickerTarget().push({ name: '', emoji: '🎟️' });
+  rStickerArea();
+  var els = document.querySelectorAll('#stkarea [id^="stn"]');
+  if (els.length) els[els.length - 1].focus();
+}
+
+function delStickerRow(i) {
+  collectStickerInputs();
+  stickerTarget().splice(i, 1);
+  rStickerArea();
+}
+
 
 // ============================================================
 // iCal パーサー（元コードそのまま）
@@ -1140,15 +1388,17 @@ async function fetchFromSettings() {
 // 設定UI
 // ============================================================
 function switchTab(t) {
-  // tasksタブを離れる前にデータ収集
-  var taskPane = document.getElementById('pane-tasks');
-  if (taskPane && taskPane.style.display !== 'none') collectTaskInputs();
+  var taskPane   = document.getElementById('pane-tasks');
+  var stickerPane = document.getElementById('pane-sticker');
+  if (taskPane   && taskPane.style.display   !== 'none') collectTaskInputs();
+  if (stickerPane && stickerPane.style.display !== 'none') collectStickerInputs();
 
-  ['cal','tasks','gen','reward','display'].forEach(function(n) {
+  ['cal','tasks','sticker','gen','reward','display'].forEach(function(n) {
     document.getElementById('pane-' + n).style.display = n === t ? 'block' : 'none';
     document.getElementById('tb-' + n).classList.toggle('active', n === t);
   });
   if (t === 'tasks')   { rDayTabs(); rTaskArea(); }
+  if (t === 'sticker') { stickerEditDow = 'fixed'; rStickerDayTabs(); rStickerArea(); }
   if (t === 'reward')  { rRewardSettingInfo(); }
   if (t === 'display') { rDisplayPane(); }
 }
@@ -1186,6 +1436,7 @@ function rStaticLabels() {
   setText('setting-title-lbl',     L('settingTitle'));
   setText('tb-cal',                 L('tabCal'));
   setText('tb-tasks',               L('tabTasks'));
+  setText('tb-sticker',             L('tabSticker'));
   setText('tb-gen',                 L('tabName'));
   setText('tb-reward',              L('tabReward'));
   setText('tb-display',             L('tabDisplay'));
@@ -1232,8 +1483,10 @@ function openSettings() {
 
 function closeSettings() {
   document.getElementById('ovl').classList.remove('show');
-  document.getElementById('pane-tasks').style.display = 'none';
-  document.getElementById('tkarea').innerHTML = '';
+  document.getElementById('pane-tasks').style.display   = 'none';
+  document.getElementById('pane-sticker').style.display = 'none';
+  document.getElementById('tkarea').innerHTML  = '';
+  document.getElementById('stkarea').innerHTML = '';
 }
 
 function ovlClick(e) {
@@ -1309,6 +1562,16 @@ function saveSettings() {
     }
   }
 
+  // ★ stickerタブが開いていた場合のみ収集
+  if (document.getElementById('pane-sticker').style.display !== 'none') {
+    collectStickerInputs();
+    // 空のエントリを除去（固定・現在の曜日タブのみ）
+    S.fixedStickerTasks = (S.fixedStickerTasks || []).filter(function(t) { return t.name; });
+    if (stickerEditDow !== 'fixed' && S.stickerTasks[stickerEditDow]) {
+      S.stickerTasks[stickerEditDow] = S.stickerTasks[stickerEditDow].filter(function(t) { return t.name; });
+    }
+  }
+
   // ★ ご褒美設定の追加保存（既存フィールドに影響なし）
   var rg = parseInt(document.getElementById('rewardGoalInput').value, 10);
   if (!isNaN(rg) && rg > 0) S.rewardGoal = rg;
@@ -1316,17 +1579,19 @@ function saveSettings() {
   var ext = parseInt(document.getElementById('externalStampsInput').value, 10);
   S.externalStamps = (!isNaN(ext) && ext >= 0) ? ext : 0;
 
-  // ★ labelModeの保存（displayタブが開いていたかに関係なく常に読む）
+  // ★ labelModeの保存
   var modeRadio = document.querySelector('input[name="labelMode"]:checked');
   if (modeRadio) S.labelMode = modeRadio.value;
 
   syncTodayStamp();
   saveS();
   closeSettings();
-  rStaticLabels();  // ★ 保存後に全固定文言をlabelModeに合わせて反映
-  rDateNav();       // ★ 日付ナビの日付表示もlabelModeに合わせて更新
+  rStaticLabels();
+  rDateNav();
   rHeader();
+  rEvents();
   rTasks();
+  rStickers();
   rProgress();
   rStampCard();
   rRewardBar();
@@ -1334,11 +1599,20 @@ function saveSettings() {
 
 function resetDay() {
   if (confirm(L('resetConfirm'))) {
-    S.done[tstr] = [];
-    // stamps の今日分だけ削除（delete のみ許可、他のキーは一切触らない）
+    // ★ 今日チェック済みのシール数だけ stickerTotal を減算してからリセット
+    var todayStickerCount = (S.stickerDone && S.stickerDone[tstr])
+      ? S.stickerDone[tstr].length : 0;
+    S.stickerTotal = Math.max(0, (S.stickerTotal || 0) - todayStickerCount);
+
+    S.done[tstr]        = [];
+    S.eventDone[tstr]   = [];
+    S.stickerDone[tstr] = [];
+    // stamps の今日分だけ削除
     if (S.stamps && S.stamps[tstr]) delete S.stamps[tstr];
     saveS();
+    rEvents();
     rTasks();
+    rStickers();
     rProgress();
     rStampCard();
     rRewardBar();
@@ -1404,11 +1678,12 @@ syncTodayStamp();
 // ★ saveS() は呼ばない → 起動しただけではlocalStorageに書き込まない
 //    保存が必要な操作（チェック・設定保存・iCal取得）の中でsaveS()を呼ぶ
 viewDate = tstr;  // 起動時は今日表示
-rStaticLabels();  // ★ 起動時に全固定文言をlabelModeに合わせて反映
+rStaticLabels();
 rDateNav();
 rHeader();
 rEvents();
 rTasks();
+rStickers();
 rProgress();
 rStampCard();
 rRewardBar();
