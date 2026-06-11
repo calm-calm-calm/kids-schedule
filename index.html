@@ -1253,7 +1253,7 @@ function delStickerRow(i) {
 
 
 // ============================================================
-// iCal パーサー（元コードそのまま）
+// iCal パーサー（RRULE対応）
 // ============================================================
 function parseIcal(text) {
   var joined = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'');
@@ -1273,7 +1273,13 @@ function parseIcal(text) {
     var propFull = line.substring(0, sep);
     var propVal  = line.substring(sep + 1);
     var baseName = propFull.split(';')[0].toUpperCase();
-    cur[baseName] = propVal;
+    // ★ EXDATE は複数行・1行複数日に対応するため配列で積む
+    if (baseName === 'EXDATE') {
+      if (!cur['EXDATE']) cur['EXDATE'] = [];
+      cur['EXDATE'].push(propVal);
+    } else {
+      cur[baseName] = propVal;
+    }
     if (baseName === 'DTSTART') { cur['_DT_RAW'] = propVal; cur['_DT_PROP'] = propFull.toUpperCase(); }
     if (baseName === 'SUMMARY') { cur['_SUMMARY_RAW'] = propVal; }
   }
@@ -1281,41 +1287,167 @@ function parseIcal(text) {
   return events;
 }
 
+// ============================================================
+// RRULE 繰り返し判定
+// 対応: FREQ=DAILY/WEEKLY/MONTHLY、INTERVAL、BYDAY、BYMONTHDAY、UNTIL、EXDATE
+// 未対応: YEARLY、COUNT、BYSETPOS、BYDAY=2MO（毎月第N曜日）
+// ============================================================
+function rruleMatchesToday(dtStartJST, rruleStr, exdateArr) {
+  // dtStartJST : DTSTARTをUTC midnight扱いにしたDateオブジェクト（getUTC*で読む）
+  if (!rruleStr) return false;
+
+  // ① 今日の情報（起動時に計算済みのグローバル変数を流用）
+  var todayY = tY, todayM = tM, todayD = tD, todayDow = dow;
+
+  // ② DTSTART の日付を取得
+  var stY = dtStartJST.getUTCFullYear();
+  var stM = dtStartJST.getUTCMonth() + 1;
+  var stD = dtStartJST.getUTCDate();
+
+  // DTSTART が今日より未来なら対象外
+  if (stY > todayY) return false;
+  if (stY === todayY && stM > todayM) return false;
+  if (stY === todayY && stM === todayM && stD > todayD) return false;
+
+  // ③ RRULE をパース
+  var params = {};
+  rruleStr.split(';').forEach(function(part) {
+    var kv = part.split('=');
+    if (kv.length === 2) params[kv[0].toUpperCase()] = kv[1].toUpperCase();
+  });
+  var freq       = params['FREQ']       || '';
+  var interval   = parseInt(params['INTERVAL'] || '1', 10);
+  var until      = params['UNTIL']      || null;
+  var byday      = params['BYDAY']      ? params['BYDAY'].split(',') : null;
+  var bymonthday = params['BYMONTHDAY'] ? parseInt(params['BYMONTHDAY'], 10) : null;
+
+  // ④ UNTIL チェック（今日が UNTIL より後なら対象外）
+  if (until) {
+    var ud = until.replace(/\D/g,'').slice(0, 8);
+    var todayFlat8 = '' + todayY + pad(todayM) + pad(todayD);
+    if (todayFlat8 > ud) return false;
+  }
+
+  // ⑤ EXDATE チェック
+  //    ・exdateArr は複数行の配列
+  //    ・各行はカンマ区切りで複数日付を含む場合がある
+  //    例: ["20260610,20260617", "20260624T000000Z"]
+  if (exdateArr && exdateArr.length) {
+    var todayFlat8ex = '' + todayY + pad(todayM) + pad(todayD);
+    for (var ei = 0; ei < exdateArr.length; ei++) {
+      // カンマで分割して各日付を個別にチェック
+      var parts = exdateArr[ei].split(',');
+      for (var pi = 0; pi < parts.length; pi++) {
+        var exd = parts[pi].replace(/\D/g,'').slice(0, 8);
+        if (exd === todayFlat8ex) return false;
+      }
+    }
+  }
+
+  // ⑥ DTSTART から今日までの経過日数
+  var msPerDay = 86400000;
+  var startMs  = Date.UTC(stY, stM - 1, stD);
+  var todayMs  = Date.UTC(todayY, todayM - 1, todayD);
+  var diffDays = Math.round((todayMs - startMs) / msPerDay);
+  if (diffDays < 0) return false;
+
+  // ⑦ FREQ 別の判定
+  if (freq === 'DAILY') {
+    // INTERVAL=N ごとの繰り返し
+    return (diffDays % interval === 0);
+  }
+
+  if (freq === 'WEEKLY') {
+    if (byday) {
+      // FREQ=WEEKLY;BYDAY=MO,WE,FR
+      // 週数が INTERVAL の倍数かつ今日の曜日が BYDAY に含まれる
+      var diffWeeks = Math.floor(diffDays / 7);
+      if (diffWeeks % interval !== 0) return false;
+      var dowKeys = ['SU','MO','TU','WE','TH','FR','SA'];
+      return byday.indexOf(dowKeys[todayDow]) >= 0;
+    } else {
+      // FREQ=WEEKLY : DTSTART と同じ曜日で 7*INTERVAL 日ごと
+      return (diffDays % (7 * interval) === 0);
+    }
+  }
+
+  if (freq === 'MONTHLY') {
+    if (bymonthday !== null) {
+      // FREQ=MONTHLY;BYMONTHDAY=N : 今日の日がNと一致
+      return (todayD === bymonthday);
+    } else {
+      // FREQ=MONTHLY : DTSTART と同じ日付（月をまたいで毎月同日）
+      return (todayD === stD);
+    }
+  }
+
+  // YEARLY / その他 → 未対応
+  return false;
+}
+
 function extractEv(cur) {
   var sum = (cur['SUMMARY'] || '').trim();
   sum = sum.replace(/\\n/g,' ').replace(/\\,/g,',').replace(/\\/g,'');
   if (!sum) return null;
-  var dtRaw = cur['_DT_RAW'] || '';
+  var dtRaw  = cur['_DT_RAW']  || '';
   var dtProp = cur['_DT_PROP'] || '';
   if (!dtRaw) return null;
   var digits = dtRaw.replace(/\D/g,'');
   if (digits.length < 8) return null;
+  var exdates = cur['EXDATE'] || null;
+
+  // ===== 終日予定（8桁）=====
   if (digits.length === 8) {
-    if (digits !== todayFlat) return null;
-    return { title:sum, time:null, _sk:0 };  // timeはnull→rEventsでL('evAllDay')で表示
+    // DTSTART が今日と一致 → 単発終日予定
+    if (digits === todayFlat) return { title:sum, time:null, _sk:0 };
+    // RRULE 判定（終日繰り返し）
+    if (cur['RRULE']) {
+      var dtStartAllDay = new Date(Date.UTC(
+        +digits.slice(0,4), +digits.slice(4,6)-1, +digits.slice(6,8)
+      ));
+      if (rruleMatchesToday(dtStartAllDay, cur['RRULE'], exdates)) {
+        return { title:sum, time:null, _sk:0 };
+      }
+    }
+    return null;
   }
+
+  // ===== 時刻あり予定 =====
   var yr=+digits.slice(0,4), mo=+digits.slice(4,6)-1, dy=+digits.slice(6,8);
   var hr=+digits.slice(8,10), mn=+digits.slice(10,12);
   var isUTC = (dtRaw.charAt(dtRaw.length-1) === 'Z');
-  var hasTZID = (dtProp.indexOf('TZID') >= 0);
   var jstDate;
   if (isUTC) {
     jstDate = new Date(Date.UTC(yr,mo,dy,hr,mn,0) + 9*3600*1000);
   } else {
     jstDate = new Date(yr, mo, dy, hr, mn, 0);
   }
-  var jstFlat, timeStr;
+  var jstFlat, timeStr, skVal;
   if (isUTC) {
     jstFlat = '' + jstDate.getUTCFullYear() + pad(jstDate.getUTCMonth()+1) + pad(jstDate.getUTCDate());
-    timeStr  = pad(jstDate.getUTCHours()) + ':' + pad(jstDate.getUTCMinutes());
-    if (jstFlat !== todayFlat) return null;
-    return { title:sum, time:timeStr, _sk: jstDate.getUTCHours()*60 + jstDate.getUTCMinutes() };
+    timeStr = pad(jstDate.getUTCHours()) + ':' + pad(jstDate.getUTCMinutes());
+    skVal   = jstDate.getUTCHours()*60 + jstDate.getUTCMinutes();
   } else {
     jstFlat = '' + jstDate.getFullYear() + pad(jstDate.getMonth()+1) + pad(jstDate.getDate());
-    timeStr  = pad(jstDate.getHours()) + ':' + pad(jstDate.getMinutes());
-    if (jstFlat !== todayFlat) return null;
-    return { title:sum, time:timeStr, _sk: jstDate.getHours()*60 + jstDate.getMinutes() };
+    timeStr = pad(jstDate.getHours()) + ':' + pad(jstDate.getMinutes());
+    skVal   = jstDate.getHours()*60 + jstDate.getMinutes();
   }
+
+  // DTSTART が今日と一致 → 単発予定
+  if (jstFlat === todayFlat) {
+    return { title:sum, time:timeStr, _sk:skVal };
+  }
+
+  // RRULE 判定（時刻あり繰り返し）
+  // RRULE の日付判定には日付部分のみを使う（時刻・タイムゾーンは無視）
+  if (cur['RRULE']) {
+    var dtStartForRRule = new Date(Date.UTC(yr, mo, dy));
+    if (rruleMatchesToday(dtStartForRRule, cur['RRULE'], exdates)) {
+      return { title:sum, time:timeStr, _sk:skVal };
+    }
+  }
+
+  return null;
 }
 
 // ============================================================
@@ -1358,6 +1490,7 @@ async function fetchIcalData(url, statusEl, btnEl) {
   }
   var evs = parseIcal(icalText);
   S.events = evs;
+  syncTodayStamp();
   saveS();
   if (statusEl) {
     statusEl.textContent = evs.length
@@ -1366,6 +1499,8 @@ async function fetchIcalData(url, statusEl, btnEl) {
     statusEl.className = 'smsg ok';
   }
   rEvents();
+  rProgress();
+  rStampCard();
   return true;
 }
 
